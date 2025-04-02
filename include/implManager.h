@@ -5,17 +5,18 @@
 #include<filesystem>
 #include<fstream>
 #include<vector>
+#include<random>
 
 namespace fs = std::filesystem;
 
 
-class FileManager{
+class ImplManager{
 public: 
-    FileManager(fs::path encryptedFilePath, int numParts);
-    std::vector<fs::path> splitFile();
+    std::vector<fs::path> splitFile(fs::path encryptedFilePath, int numParts);
+    //fs::path generateRandomDirectory();
 
 private: 
-    std::vector<fs::path> splitFilePaths;
+    std::vector<fs::path> splitFileDirs;
 
 };
 

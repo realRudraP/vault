@@ -1,2 +1,9 @@
 *.exe
 /.vscode
+*.ilk
+*.pdb
+*.obj
+/.idea
+/.vs
+vcpkg_installed/
+vcpkg-configuration.json

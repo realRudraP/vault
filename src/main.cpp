@@ -1,13 +1,7 @@
-#include<iostream>
-#include<windows.h>
+#include "../include/fileManager.h"
+#include "../include/control.h"
 
-
-int main(int argc, char *argv[]){
-    while(true){
-        std::string input;
-        std::cout<<"vault> ";
-        if(!std::getline(std::cin,input)){
-            std::cerr << "Error in recieving input from the console" << std::endl;
-        }
-    }
+int main(){
+    Manager manager;
+    return 0;
 }

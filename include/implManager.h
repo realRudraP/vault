@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 
 class ImplManager{
 public: 
-    std::vector<fs::path> splitFile(fs::path encryptedFilePath, int numParts);
+    fs::path splitFile(fs::path encryptedFilePath, int numParts);
     //fs::path generateRandomDirectory();
 
 private: 

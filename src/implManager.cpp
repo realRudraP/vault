@@ -7,20 +7,21 @@
 
 namespace fs = std::filesystem;
 
-std::vector<fs::path> ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
+fs::path ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
     fs::path sFilePath = encryptedFilePath;
     std::cout << "🔹 Received file path: " << sFilePath << std::endl;
 
     if (!fs::exists(sFilePath)) {
         std::cerr << "File does not exist!" << std::endl;
-        return splitFileDirs;
+        return sFilePath;
     }
 
     std::ifstream sFile(sFilePath, std::ios::binary);
     if (!sFile.is_open()) {
         std::cerr << "Error opening file: " << sFilePath << std::endl;
-        return splitFileDirs;
+        return sFilePath;                
     }
+
 
     try {
         // Calculate file and chunk sizes
@@ -34,18 +35,27 @@ std::vector<fs::path> ImplManager::splitFile(fs::path encryptedFilePath, int num
         // Create buffer using vector for automatic memory management
         // They also eliminate the need for manual memory management and potential memory leaks
         std::vector<char> buffer(std::max(chunkSize, lastChunkSize));
-        std::vector<fs::path> createdDirs;
+
+        //Updated code for a single directory
+        fs::path outputDir = "chunks_output" ;
+        if(!fs::exists(outputDir)){
+            if(!fs::create_directory(outputDir)){
+                throw std::runtime_error("Failed to create output directory: " + outputDir.string());
+            }
+        }
+        /*std::vector<fs::path> createdDirs;*/
 
         for (int i = 0; i < numChunks; i++) {
-            fs::path chunkDir = ImplManager::generateRandomDirectory();
-            std::cout<<"Chunk directory: " << chunkDir << std::endl;
+            /*fs::path chunkDir = ImplManager::generateRandomDirectory();
+            std::cout << "Chunk directory: " << chunkDir << std::endl;
             // Track created directories for cleanup in case of failure and to return to the orchestrator later on
-            if (!fs::create_directory(chunkDir)) {
+            if (!fs::create_directory(chunkDir))
+            {
                 throw std::runtime_error("Failed to create directory: " + chunkDir.string());
             }
-            createdDirs.push_back(chunkDir);
+            createdDirs.push_back(chunkDir);*/
 
-            fs::path chunkFile = chunkDir / ("chunk_" + std::to_string(i) + ".bin");
+            fs::path chunkFile = outputDir / ("chunk_" + std::to_string(i) + ".bin");
             std::ofstream outputFile(chunkFile, std::ios::binary);
             
             if (!outputFile.is_open()) {
@@ -65,13 +75,13 @@ std::vector<fs::path> ImplManager::splitFile(fs::path encryptedFilePath, int num
                 throw std::runtime_error("Failed to write to output file: " + chunkFile.string());
             }
 
-            std::cout << "Chunk " << i << " stored in: " << chunkDir << std::endl;
-            splitFileDirs.push_back(chunkFile);
+            std::cout << "Chunk " << i << " stored in: " << chunkFile << std::endl;
+            //splitFileDirs.push_back(chunkFile);
             outputFile.close();
         }
 
         sFile.close();
-        return splitFileDirs;
+        return outputDir;
 
     } catch (const std::exception& e) {
         std::cerr << "Error during file splitting: " << e.what() << std::endl;
@@ -87,7 +97,7 @@ std::vector<fs::path> ImplManager::splitFile(fs::path encryptedFilePath, int num
 
         splitFileDirs.clear();
         sFile.close();
-        return splitFileDirs;
+        return fs::path();
     }
 }
 
@@ -96,3 +106,5 @@ fs::path ImplManager::generateRandomDirectory(){
     static std::uniform_int_distribution<int> dist(1000, 9999); 
     return fs::path("chunk_dir_" + std::to_string(dist(rng)));
 }
+
+

@@ -17,7 +17,7 @@ public:
 
 private: 
     std::vector<fs::path> splitFileDirs;
-
+    fs::path generateRandomDirectory();
 };
 
 class Reconstructor{

@@ -7,3 +7,4 @@
 /.vs
 vcpkg_installed/
 vcpkg-configuration.json
+src/desktop.ini

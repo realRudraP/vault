@@ -12,17 +12,22 @@ struct ChunkInfo{
 };
 class Config{
     public:
-    Config(std::vector<unsigned char> salt);
     Config(fs::path vaultPath);
     Config();
     std::vector<unsigned char> salt;
+    bool enableSecureDeletion;
+    size_t secureDeletionPasses;
     bool saveConfig();
     bool loadConfig();
 };
 class Manager{
+    void initVault();
+    void loadExistingVault(const fs::path& vaultPath);
+    void createNewVault(const fs::path& vaultPath);
     public:
     Manager();
     Config config;
+    void changeDirectory(fs::path path);
 };
 
 struct FileMetadata{

@@ -1,7 +1,7 @@
 #include "../include/fileManager.h"
 #include "../include/control.h"
 
-int main(){
+/*int main(){
     Manager manager;
     return 0;
-}
+}*/

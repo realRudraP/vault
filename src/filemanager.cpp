@@ -10,10 +10,10 @@ bool FileManager::createFileWithContents(const fs::path& filePath, const std::st
 
     std::ofstream file(filePath);
     if (!file) {
-        return false; // Failed to create the file
+        return false; 
     }
     file << contents;
-    return true; // File created successfully
+    return true; 
 }
 
 bool FileManager::createFile(const fs::path& filePath) {
@@ -22,9 +22,9 @@ bool FileManager::createFile(const fs::path& filePath) {
 
     std::ofstream file(filePath);
     if (!file) {
-        return false; // Failed to create the file
+        return false; 
     }
-    return true; // File created successfully
+    return true; 
 }
 
 
@@ -37,4 +37,17 @@ fs::path FileManager::getSpecialFolderPath(REFKNOWNFOLDERID folderId) {
         return result;
     }
     return fs::path(); 
+}
+
+bool FileManager::readFileContents(const std::filesystem::path& filePath, std::string& outContents) {
+    std::ifstream file(filePath, std::ios::binary | std::ios::ate); 
+    if (!file.is_open()) return false;
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    outContents.resize(size);
+    if (!file.read(&outContents[0], size)) return false;
+
+    return true;
 }

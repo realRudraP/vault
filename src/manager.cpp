@@ -1,7 +1,7 @@
 #include "../include/control.h"
 #include "../include/fileManager.h"
 #include "../include/utils.h"
-
+#include "../include/logger.h"
 Config::Config() { };
 Config::Config(fs::path vaultPath)
 {
@@ -10,7 +10,7 @@ Config::Config(fs::path vaultPath)
         std::cerr << "Failed to read vault file." << std::endl;
         return;
     }
-    std::cout << "Read file contents" << std::endl;
+    
 
     std::istringstream iss(data, std::ios::binary);
 
@@ -56,10 +56,10 @@ bool Config::saveConfig()
     std::string data = oss.str();
 
     if (FileManager().createFileWithContents(vaultFilePath, data)) {
-        std::cout << "Config saved successfully." << std::endl;
+        LOG_INFO("Config saved successfully.");
         return true;
     } else {
-        std::cout << "Failed to save config." << std::endl;
+        std::cerr << "Failed to save config." << std::endl;
         return false;
     }
 }
@@ -82,12 +82,11 @@ void Manager::initVault()
 }
 void Manager::loadExistingVault(const fs::path& vaultFilePath)
 {
-    std::cout << "Entered true branch." << std::endl;
     config = Config(vaultFilePath);
-    std::cout << "Welcome back to Vault!" << std::endl;
-    std::cout << "Your salt is: " << std::string(config.salt.begin(), config.salt.end()) << std::endl;
-    std::cout << "Your secure deletion setting is: " << (config.enableSecureDeletion ? "Enabled" : "Disabled") << std::endl;
-    std::cout << "Your secure deletion passes are: " << config.secureDeletionPasses << std::endl;
+    LOG_INFO("Welcome back to Vault!");
+    LOG_INFO("Salt: " + std::string(config.salt.begin(), config.salt.end()));
+    LOG_INFO("Secure deletion: " + std::string(config.enableSecureDeletion ? "Enabled" : "Disabled"));
+    LOG_INFO("Secure deletion passes: " + std::to_string(config.secureDeletionPasses));
 }
 void Manager::createNewVault(const fs::path& vaultFilePath)
 {

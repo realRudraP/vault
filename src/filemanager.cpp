@@ -2,7 +2,6 @@
 
 FileManager::FileManager() { };
 bool FileManager::checkFileExists(const fs::path& filePath) {
-    std::cout << "Entered check" << std::endl;
     return fs::exists(filePath);
 }
 bool FileManager::createFileWithContents(const fs::path& filePath, const std::string& contents) {

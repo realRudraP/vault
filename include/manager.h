@@ -31,9 +31,8 @@ class Manager {
     void loadExistingVault(const fs::path& vaultPath);
     void createNewVault(const fs::path& vaultPath);
     std::string password;
-
+    std::vector<unsigned char> key; 
 public:
-    std::vector<unsigned char> key; // MAKE THIS PRIVATE
     Manager();
     Config config;
     void changeDirectory(fs::path path);

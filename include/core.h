@@ -2,6 +2,12 @@
 #define VAULT_CORE_H
 
 #include "implManager.h"
+#include "manager.h"
+class VaultMetadata{
+    public:
+        std::vector<fs::path> foldersToStore;
+        std::vector<FileInfo> files;
+};
 
 class Core{
     bool splitFile(const fs::path& filePath, int numChunks);

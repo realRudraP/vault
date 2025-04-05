@@ -140,3 +140,28 @@ std::vector<unsigned char> Crypto::deriveKeyFromPasswordAndSalt(const std::strin
         }
         return key;
 }
+std::vector<unsigned char> Crypto::fileSHA256Generator(fs::path filePath){
+    const size_t bufferSize = 4096;
+    std::vector<unsigned char> buffer(bufferSize);
+    std::vector<unsigned char> hash(EVP_MAX_MD_SIZE);
+    unsigned int hash_len = 0;
+
+    std::ifstream inputFile(filePath, std::ios::binary);
+
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
+    while(inputFile.good()){
+        inputFile.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+        std::streamsize bytesRead = inputFile.gcount();
+
+        if(bytesRead>0){
+            EVP_DigestUpdate(ctx, buffer.data(), bytesRead);
+        }
+        
+    }
+    EVP_DigestFinal_ex(ctx, hash.data(), &hash_len);
+    EVP_MD_CTX_free(ctx);
+    hash.resize(hash_len);
+    return hash;
+}

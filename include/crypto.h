@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include<openssl/sha.h>
 #include <openssl/err.h>
 
 namespace fs = std::filesystem;
@@ -30,7 +31,7 @@ public:
     
     fs::path encrypt(const fs::path& inputFilePath);
     fs::path decrypt(const fs::path& inputFilePath);
-
+    static std::vector<unsigned char> fileSHA256Generator(fs::path filePath);
     void cleanupFiles();  
 };
 

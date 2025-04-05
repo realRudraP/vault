@@ -76,8 +76,5 @@ void VaultManager::createNewVault(fs::path vaultPath) {
 }
 void VaultManager::loadExistingVault(fs::path vaultPath) {
     config.loadConfig(vaultPath);
-    LOG_INFO("Welcome back to Vault!");
-    LOG_INFO("Salt: " + std::string(config.salt.begin(), config.salt.end()));
-    LOG_INFO("Secure deletion: " + std::string(config.enableSecureDeletion ? "Enabled" : "Disabled"));
-    LOG_INFO("Secure deletion passes: " + std::to_string(config.secureDeletionPasses));
+    std::cout<<"Welcome back to your vault!"<<std::endl;    
 }

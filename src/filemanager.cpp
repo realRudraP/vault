@@ -53,3 +53,33 @@ bool FileManager::readFileContents(const std::filesystem::path& filePath, std::s
 void FileManager::hideFolder(const fs::path &folderPath){
     SetFileAttributesW(folderPath.c_str(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
 }
+
+fs::path FileManager::createHiddenVaultFolder(const fs::path parentDir) {
+    std::vector<std::string> namePool = {
+        ".vault_cache_fragments",
+        ".sys_vault_chunks",
+        ".vault_segments",
+        ".vault_fragments_x",
+        ".vault_blocks_hidden"
+    };
+
+    // Randomly choose one
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    std::string folderName = namePool[std::rand() % namePool.size()];
+
+    fs::path hiddenPath = parentDir / folderName;
+
+    try {
+        if (!fs::exists(hiddenPath)) {
+            fs::create_directories(hiddenPath);
+            FileManager::hideFolder(hiddenPath);
+            std::cout << "Created hidden vault subfolder in: " << parentDir << "\n";
+        } else {
+            std::cout << "🔹 Vault subfolder already exists: " << parentDir << "\n";
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to create hidden subfolder in: "<<parentDir<<" due to " << e.what() << "\n";
+    }
+
+    return hiddenPath;
+}

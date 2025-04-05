@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "manager.h"
 #include "logger.h"
+#include "core.h"
 
 namespace fs = std::filesystem;
 
@@ -17,12 +18,13 @@ private:
 
     void loadExistingVault(fs::path vaultPath);
     void createNewVault(fs::path vaultPath);
+    VaultMetadata vaultMetadata;
 
 public:
     static VaultManager& getInstance();
 
     Config config;
-    
+
     bool initialize();
     bool isInitialized() const;
 };

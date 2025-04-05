@@ -18,6 +18,7 @@ namespace FileManager {
     bool createFileWithContents(const fs::path& filePath, const std::string& contents);
     bool readFileContents(const fs::path& filePath, std::string& outContents);
     void hideFolder(const fs::path& folderPath);
+    fs::path createHiddenVaultFolder(const fs::path parentDirectory);
 }
 
 namespace ProtectedFileManager{

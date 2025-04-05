@@ -1,22 +1,22 @@
 #ifndef VAULT_CONTROL_H
 #define VAULT_CONTROL_H
-#include<filesystem>
-#include<string>
-#include<Windows.h>
-#include<vector>
+#include <Windows.h>
+#include <filesystem>
+#include <string>
+#include <vector>
 namespace fs = std::filesystem;
 
-struct ChunkInfo{
+struct ChunkInfo {
     int order_index;
     std::filesystem::path chunk_path;
 };
-struct FileInfo{
+struct FileInfo {
     std::string filename;
     uint64_t file_size;
     std::vector<ChunkInfo> chunks;
 };
-class Config{
-    public:
+class Config {
+public:
     Config(fs::path vaultPath);
     Config();
     std::vector<unsigned char> salt;
@@ -25,17 +25,20 @@ class Config{
     bool saveConfig();
     bool loadConfig();
 };
-class Manager{
+class Manager {
     void initVault();
     void loadExistingVault(const fs::path& vaultPath);
     void createNewVault(const fs::path& vaultPath);
-    public:
+    std::string password;
+
+public:
+    std::vector<unsigned char> key; // MAKE THIS PRIVATE
     Manager();
     Config config;
     void changeDirectory(fs::path path);
 };
 
-struct FileMetadata{
+struct FileMetadata {
     std::string filename;
     uint64_t file_size;
     std::vector<ChunkInfo> chunks;

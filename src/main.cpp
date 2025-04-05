@@ -1,12 +1,15 @@
-#include "../include/control.h"
+#include "../include/manager.h"
 #include "../include/utils.h"
 #include "../include/implManager.h"
 #include "../include/crypto.h"
+#include "../include/logger.h"
 #include <iostream>
 int main(){
     Manager manager;
     std::string inputLine;
     while(true){
+        LOG_INFO("Your AES Key is: ");
+        Utilities::printHex(manager.key);
         std::cout << "Vault> ";
         std::getline(std::cin, inputLine);
         std::cout<<"Got input: "<<inputLine << std::endl;

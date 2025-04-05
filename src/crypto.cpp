@@ -7,13 +7,7 @@ Crypto::Crypto(const std::vector<unsigned char>& key) {
     std::copy(key.begin(), key.end(), aesKey);
 }
 
-Crypto::~Crypto() {
-    try {
-        cleanupFiles();
-    } catch (const std::exception& e) {
-        std::cerr << "Cleanup Error: " << e.what() << std::endl;
-    }
-}
+
 
 void Crypto::handleErrors() {
     ERR_print_errors_fp(stderr);
@@ -129,4 +123,20 @@ void Crypto::cleanupFiles() {
         }
     }
     generatedFiles.clear();
+}
+
+std::vector<unsigned char> Crypto::deriveKeyFromPasswordAndSalt(const std::string& password,const std::vector<unsigned char>& salt, int iterations ){
+    std::vector<unsigned char> key(Crypto::AES_KEY_SIZE);
+    if(PKCS5_PBKDF2_HMAC(
+        password.c_str(),
+        password.length(),
+        salt.data(),
+        salt.size(),
+        iterations,
+        EVP_sha256(),
+        Crypto::AES_KEY_SIZE,
+        key.data())!=1){
+            throw std::runtime_error("Key derivation failed.");
+        }
+        return key;
 }

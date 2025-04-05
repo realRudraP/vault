@@ -8,6 +8,7 @@
 #include<sstream>
 #include<iostream>
 #include<string>
+#include<iomanip>
 
 
 class Utilities{
@@ -18,6 +19,7 @@ class Utilities{
     std::vector<std::string> tokenize(const std::string &inputLine);
     static bool getBoolFromUser(const std::string prompt, bool defaultValue = false);
     static int getPositiveIntFromUser(const std::string prompt, int defaultValue = 0);
+    static void printHex(const std::vector<unsigned char>& data);
 };
 
 #endif

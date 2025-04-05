@@ -75,3 +75,10 @@ int Utilities::getPositiveIntFromUser(const std::string prompt, int defaultValue
         }
     }
 }
+
+void Utilities::printHex(const std::vector<unsigned char>& data) {
+    for (unsigned char byte : data) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)byte;
+    }
+    std::cout << std::dec << std::endl;
+}

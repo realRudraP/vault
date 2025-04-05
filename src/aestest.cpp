@@ -18,7 +18,7 @@ void printHex(const std::vector<unsigned char>& data) {
     }
     std::cout << std::dec << std::endl;
 }
-
+/*
 int main() {
     try {
         std::string filePath;
@@ -52,3 +52,4 @@ int main() {
 
     return 0;
 }
+*/

@@ -1,5 +1,6 @@
-#include "../include/control.h"
+#include "../include/manager.h"
 #include "../include/fileManager.h"
+#include "../include/crypto.h"
 #include "../include/utils.h"
 #include "../include/logger.h"
 Config::Config() { };
@@ -21,6 +22,7 @@ Config::Config(fs::path vaultPath)
             std::cerr << "Failed to read salt size." << std::endl;
             return;
         }
+
         salt.resize(saltSize);
         iss.read(reinterpret_cast<char*>(salt.data()), saltSize);
 
@@ -79,6 +81,9 @@ void Manager::initVault()
     } else {
         this->createNewVault(vaultFilePath);
     }
+    this->key=Crypto::deriveKeyFromPasswordAndSalt(this->password, this->config.salt);
+    
+
 }
 void Manager::loadExistingVault(const fs::path& vaultFilePath)
 {

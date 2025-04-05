@@ -1,17 +1,26 @@
 #include "../include/utils.h"
-std::string Utilities::takePwdFromUser()
+std::string Utilities::takePwdFromUser(const std::string prompt)
 {
-    std::string password;
+    std::string password1, password2;
     HANDLE hStdInput = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode = 0;
     GetConsoleMode(hStdInput, &mode);
-    SetConsoleMode(
-        hStdInput,
-        mode & (~ENABLE_ECHO_INPUT));
-    std::cin.getline(password.data(), 100); 
-
-    SetConsoleMode(hStdInput, mode);
-    return password;
+    
+    do {
+        std::cout << prompt << ": ";
+        SetConsoleMode(hStdInput, mode & (~ENABLE_ECHO_INPUT));
+        std::getline(std::cin, password1);
+        std::cout <<"Confirm password: ";
+        std::getline(std::cin, password2);
+        SetConsoleMode(hStdInput, mode);
+        std::cout << std::endl;
+        
+        if (password1 != password2) {
+            std::cout << "Passwords do not match. Please try again.\n";
+        }
+    } while (password1 != password2);
+    
+    return password1;
 }
 
 void Utilities::securelyClearCharVector(std::vector<char>&buf){
@@ -81,4 +90,11 @@ void Utilities::printHex(const std::vector<unsigned char>& data) {
         std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)byte;
     }
     std::cout << std::dec << std::endl;
+}
+void Utilities::changeDirectory(fs::path path){
+    if (fs::exists(path)) {
+        fs::current_path(path);
+    } else {
+        std::cerr << "Directory does not exist: " << path << std::endl;
+    }
 }

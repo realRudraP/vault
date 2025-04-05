@@ -5,11 +5,10 @@
 #include "../include/logger.h"
 #include <iostream>
 int main(){
+    SetConsoleOutputCP(CP_UTF8);
     Manager manager;
     std::string inputLine;
     while(true){
-        LOG_INFO("Your AES Key is: ");
-        Utilities::printHex(manager.key);
         std::cout << "Vault> ";
         std::getline(std::cin, inputLine);
         std::cout<<"Got input: "<<inputLine << std::endl;
@@ -22,7 +21,7 @@ int main(){
         }else if(tokens[0]=="cd"){
             if (tokens.size() > 1) {
                 fs::path newPath = fs::path(tokens[1]);
-                manager.changeDirectory(newPath);
+                Utilities::changeDirectory(newPath);
             } else {
                 std::cout << "Usage: cd <directory>" << std::endl;
             }

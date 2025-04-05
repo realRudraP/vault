@@ -4,7 +4,6 @@ bool FileManager::checkFileExists(const fs::path& filePath) {
     return fs::exists(filePath);
 }
 bool FileManager::createFileWithContents(const fs::path& filePath, const std::string& contents) {
-    // Ensure the parent directory exists
     fs::create_directories(filePath.parent_path());
 
     std::ofstream file(filePath);
@@ -16,7 +15,7 @@ bool FileManager::createFileWithContents(const fs::path& filePath, const std::st
 }
 
 bool FileManager::createFile(const fs::path& filePath) {
-    // Ensure the parent directory exists
+
     fs::create_directories(filePath.parent_path());
 
     std::ofstream file(filePath);
@@ -49,4 +48,8 @@ bool FileManager::readFileContents(const std::filesystem::path& filePath, std::s
     if (!file.read(&outContents[0], size)) return false;
 
     return true;
+}
+
+void FileManager::hideFolder(const fs::path &folderPath){
+    SetFileAttributesW(folderPath.c_str(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
 }

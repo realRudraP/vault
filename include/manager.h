@@ -1,5 +1,6 @@
-#ifndef VAULT_CONTROL_H
-#define VAULT_CONTROL_H
+#ifndef VAULT_MANAGER_H
+#define VAULT_MANAGER_H
+
 #include <Windows.h>
 #include <filesystem>
 #include <string>
@@ -13,17 +14,17 @@ struct ChunkInfo {
 struct FileInfo {
     std::string filename;
     uint64_t file_size;
+    std::vector <unsigned char> hash;
     std::vector<ChunkInfo> chunks;
 };
 class Config {
 public:
-    Config(fs::path vaultPath);
     Config();
     std::vector<unsigned char> salt;
     bool enableSecureDeletion;
     size_t secureDeletionPasses;
     bool saveConfig();
-    bool loadConfig();
+    bool loadConfig(fs::path configPath);
 };
 class Manager {
     void initVault();

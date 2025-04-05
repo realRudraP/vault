@@ -10,6 +10,11 @@ struct ChunkInfo{
     int order_index;
     std::filesystem::path chunk_path;
 };
+struct FileInfo{
+    std::string filename;
+    uint64_t file_size;
+    std::vector<ChunkInfo> chunks;
+};
 class Config{
     public:
     Config(fs::path vaultPath);

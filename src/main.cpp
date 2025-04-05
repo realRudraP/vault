@@ -1,6 +1,7 @@
 #include "../include/control.h"
 #include "../include/utils.h"
 #include "../include/implManager.h"
+#include "../include/crypto.h"
 #include <iostream>
 int main(){
     Manager manager;
@@ -43,6 +44,7 @@ int main(){
         }
     }
 }
+    
 /*
 int main(){
     ImplManager implManager;

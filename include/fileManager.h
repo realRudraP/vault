@@ -21,5 +21,6 @@ class FileManager{
         bool readFileContents(const fs::path& filePath, std::string& outContents);
 };
 
-
+class ProtectedFileManager{
+};
 #endif

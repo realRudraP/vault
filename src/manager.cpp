@@ -7,7 +7,7 @@ Config::Config() { };
 Config::Config(fs::path vaultPath)
 {
     std::string data;
-    if (!FileManager().readFileContents(vaultPath, data)) {
+    if (!FileManager::readFileContents(vaultPath, data)) {
         std::cerr << "Failed to read vault file." << std::endl;
         return;
     }
@@ -43,7 +43,7 @@ Config::Config(fs::path vaultPath)
 }
 bool Config::saveConfig()
 {
-    fs::path applicationDataPath = FileManager().getSpecialFolderPath(FOLDERID_ProgramData);
+    fs::path applicationDataPath = FileManager::getSpecialFolderPath(FOLDERID_ProgramData);
     fs::path vaultPath = applicationDataPath / "Vault";
     fs::path vaultFilePath = vaultPath / "vault";
 
@@ -57,7 +57,7 @@ bool Config::saveConfig()
 
     std::string data = oss.str();
 
-    if (FileManager().createFileWithContents(vaultFilePath, data)) {
+    if (FileManager::createFileWithContents(vaultFilePath, data)) {
         LOG_INFO("Config saved successfully.");
         return true;
     } else {
@@ -73,10 +73,10 @@ Manager::Manager()
 
 void Manager::initVault()
 {
-    fs::path applicationDataPath = FileManager().getSpecialFolderPath(FOLDERID_ProgramData);
+    fs::path applicationDataPath = FileManager::getSpecialFolderPath(FOLDERID_ProgramData);
     fs::path vaultPath = applicationDataPath / "Vault";
     fs::path vaultFilePath = vaultPath / "vault";
-    if (FileManager().checkFileExists(vaultFilePath)) {
+    if (FileManager::checkFileExists(vaultFilePath)) {
         this->loadExistingVault(vaultFilePath);
     } else {
         this->createNewVault(vaultFilePath);
@@ -98,22 +98,22 @@ void Manager::createNewVault(const fs::path& vaultFilePath)
     std::cout << "Welcome to Vault!" << std::endl;
     std::cout << "It looks like it's your first run of the app. Let us create a vault for you." << std::endl;
     std::cout << "Please enter a password for your vault: ";
-    std::string pwd = Utilities().takePwdFromUser();
+    std::string pwd = Utilities::takePwdFromUser();
     std::cout << "Please re-enter your password: ";
-    std::string pwd2 = Utilities().takePwdFromUser();
+    std::string pwd2 = Utilities::takePwdFromUser();
     if (pwd != pwd2) {
         std::cout << "Passwords do not match. Exiting..." << std::endl;
         exit(1);
     }
-    bool enableSecureDeletion = Utilities().getBoolFromUser("Would you like to enable secure deletion? (default is false)", false);
+    bool enableSecureDeletion = Utilities::getBoolFromUser("Would you like to enable secure deletion? (default is false)", false);
     this->config.enableSecureDeletion = enableSecureDeletion;
     if (enableSecureDeletion) {
-        int secureDeletionPasses = Utilities().getPositiveIntFromUser("How many passes for secure deletion? (default is 3)", 3);
+        int secureDeletionPasses = Utilities::getPositiveIntFromUser("How many passes for secure deletion? (default is 3)", 3);
         this->config.secureDeletionPasses = secureDeletionPasses;
     } else {
         this->config.secureDeletionPasses = 0;
     }
-    this->config.salt = Utilities().generateSalt(16);
+    this->config.salt = Utilities::generateSalt(16);
     if (this->config.saveConfig()) {
         std::cout << "Vault created successfully." << std::endl;
     } else {

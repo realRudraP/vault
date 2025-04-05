@@ -13,7 +13,7 @@ int main(){
         std::cout << "Vault> ";
         std::getline(std::cin, inputLine);
         std::cout<<"Got input: "<<inputLine << std::endl;
-        std::vector<std::string> tokens = Utilities().tokenize(inputLine);
+        std::vector<std::string> tokens = Utilities::tokenize(inputLine);
         if (tokens.empty()) {
             continue;
         }else if(tokens[0] == "exit"){

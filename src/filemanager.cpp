@@ -1,6 +1,5 @@
 #include "../include/fileManager.h"
 
-FileManager::FileManager() { };
 bool FileManager::checkFileExists(const fs::path& filePath) {
     return fs::exists(filePath);
 }

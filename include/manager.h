@@ -5,7 +5,11 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <optional>
+#include "implManager.h"
+#include "serialization.h"
 namespace fs = std::filesystem;
+
 
 struct ChunkInfo {
     int order_index;
@@ -17,31 +21,47 @@ struct FileInfo {
     std::vector <unsigned char> hash;
     std::vector<ChunkInfo> chunks;
 };
-class Config {
-public:
-    Config();
-    std::vector<unsigned char> salt;
-    bool enableSecureDeletion;
-    size_t secureDeletionPasses;
-    bool saveConfig();
-    bool loadConfig(fs::path configPath);
-};
-class Manager {
-    void initVault();
-    void loadExistingVault(const fs::path& vaultPath);
-    void createNewVault(const fs::path& vaultPath);
-    std::string password;
-    std::vector<unsigned char> key; 
-public:
-    Manager();
-    Config config;
-    void changeDirectory(fs::path path);
-};
-
 struct FileMetadata {
     std::string filename;
     uint64_t file_size;
     std::vector<ChunkInfo> chunks;
 };
+class VaultMetadata{
+    public:
+        std::vector<fs::path> foldersToStore;
+        std::vector<FileInfo> files;
+};
+class Config {
+    Config()=default;
+    public:
+        static Config& getInstance();
+        std::vector<unsigned char> salt;
+        bool enableSecureDeletion;
+        size_t secureDeletionPasses;
+        bool saveConfig();
+        bool loadConfig(fs::path configPath);
+};
+class Manager {
+    Manager()=default;
+    std::vector<unsigned char> key;
+    bool loadMetadataEncrypted();
+public:
+    static Manager& getInstance();
+    bool initialize();
+    void changeDirectory(fs::path path);
+    bool userPasswordValidation(std::string password);
+    bool saveMetadataEncrypted(const VaultMetadata metadata);
+    
+};
+
+
+
+class Core{
+    bool splitFile(const fs::path& filePath, int numChunks);
+    bool encryptFile(const fs::path& filePath, const std::vector<unsigned char>& key);
+    bool decryptFile(const fs::path& filePath, const std::vector<unsigned char>& key);
+    bool cleanupFiles(const std::vector<fs::path>& filesToDelete);
+};
+
 
 #endif

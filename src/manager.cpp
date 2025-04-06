@@ -4,7 +4,10 @@
 #include "../include/utils.h"
 #include "../include/logger.h"
 #include "../include/vaultManager.h"
-Config::Config() { };
+Config& Config::getInstance(){
+    static Config instance;
+    return instance;
+}
 bool Config::loadConfig(fs::path vaultPath)
 {
     std::string data;
@@ -68,14 +71,72 @@ bool Config::saveConfig()
     }
 }
 
-Manager::Manager()
+bool Manager::initialize()
 {
     VaultManager& vaultManager = VaultManager::getInstance();
-    if(!vaultManager.initialize()){
-        std::cerr << "Failed to initialize VaultManager." << std::endl;
-        return;
-    }
-    
+    vaultManager.initialize();
+    return true;
 }
+Manager& Manager::getInstance(){
+    static Manager instance;
+    return instance;
+}
+bool Manager::userPasswordValidation(std::string password){
+    this->key = Crypto::deriveKeyFromPasswordAndSalt(password, Config::getInstance().salt);
+    return Manager::loadMetadataEncrypted();
+}
+
+bool Manager::saveMetadataEncrypted(const VaultMetadata metadata) {
+    fs::path applicationDataPath = FileManager::getSpecialFolderPath(FOLDERID_ProgramData);
+    fs::path vaultPath = applicationDataPath / "Vault";
+    fs::path tempFile = vaultPath / "metadata.temp";
+    fs::path encryptedFile = vaultPath / "metadata.vaultenc";
+
+    try {
+        // Serialize metadata to temporary file
+        std::ofstream ofs(tempFile, std::ios::binary | std::ios::trunc);
+        Serialization::serializeVaultMetadata(ofs, metadata);
+        ofs.close();
+
+        // Encrypt and get the actual encrypted path
+        Crypto crypto(Manager::getInstance().key);
+        fs::path encryptedTemp = crypto.encrypt(tempFile);
+
+        // Move the encrypted file to final destination
+        fs::rename(encryptedTemp, encryptedFile);
+
+        // Clean up temp file
+        fs::remove(tempFile);
+
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to save encrypted metadata: " << e.what() << '\n';
+        return false;
+    }
+}
+
+
+bool Manager::loadMetadataEncrypted() {
+    fs::path applicationDataPath = FileManager::getSpecialFolderPath(FOLDERID_ProgramData);
+    fs::path vaultPath = applicationDataPath / "Vault";
+    fs::path encryptedFile=vaultPath / "metadata.vaultenc";
+
+    try {
+        Crypto crypto(this->key);
+        fs::path decryptedFile = crypto.decrypt(encryptedFile);
+
+        std::ifstream ifs(decryptedFile, std::ios::binary);
+        VaultMetadata metadata = Serialization::deserializeVaultMetadata(ifs);
+        VaultManager::getInstance().setVaultMetadata(metadata);
+        ifs.close();
+
+        crypto.cleanupFiles(); // Clean decrypted file
+
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
 
 

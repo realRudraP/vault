@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 fs::path ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
     fs::path sFilePath = encryptedFilePath;
-    std::cout << "🔹 Received file path: " << sFilePath << std::endl;
+    std::cout << "[SPLITTING FUNCTION] Received file path: " << sFilePath << std::endl;
 
     if (!fs::exists(sFilePath)) {
         std::cerr << "File does not exist!" << std::endl;
@@ -101,10 +101,69 @@ fs::path ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
     }
 }
 
-fs::path ImplManager::generateRandomDirectory(){
-    static std::mt19937 rng(std::random_device{}()); 
-    static std::uniform_int_distribution<int> dist(1000, 9999); 
-    return fs::path("chunk_dir_" + std::to_string(dist(rng)));
+
+
+fs::path ImplManager::reconstruct(fs::path sPathForChunks, int numParts) {
+    fs::path sPath = sPathForChunks;
+    std::cout << "[RECONSTRUCTING FUNCTION] Received file path: " << sPath << std::endl;
+
+    if (!fs::exists(sPath)) {
+        std::cerr << "Source does not exist!" << std::endl;
+        return fs::path();
+    }
+
+    try {
+        // Define the output file path
+        fs::path reconstructedFilePath = "reconstructed_output.jpeg";
+
+        std::ofstream outputFile(reconstructedFilePath, std::ios::binary);
+        if (!outputFile.is_open()) {
+            std::cerr << "Error opening output file stream: " << reconstructedFilePath << std::endl;
+            return fs::path();
+        }
+
+        for (int i = 0; i < numParts; i++) {
+            fs::path chunkFile = sPath / ("chunk_" + std::to_string(i) + ".bin");
+            std::ifstream inputFile(chunkFile, std::ios::binary);
+
+            if (!inputFile.is_open()) {
+                std::cerr << "Error opening chunk file stream: " << chunkFile << std::endl;
+                return fs::path();
+            }
+
+            inputFile.seekg(0, std::ios::end);
+            std::size_t chunkSize = inputFile.tellg();
+            inputFile.seekg(0, std::ios::beg);
+
+            std::vector<char> buffer(chunkSize);
+            inputFile.read(buffer.data(), chunkSize);
+
+            if (inputFile.fail()) {
+                std::cerr << "Error reading from chunk file: " << chunkFile << std::endl;
+                return fs::path();
+            }
+
+            outputFile.write(buffer.data(), chunkSize);
+
+            if (outputFile.fail()) {
+                std::cerr << "Error writing to output file: " << reconstructedFilePath << std::endl;
+                return fs::path();
+            }
+
+            inputFile.close();
+        }
+
+        outputFile.close();
+        return reconstructedFilePath;
+    } catch (const std::exception &e) {
+        std::cerr << "Error during file reconstruction: " << e.what() << std::endl;
+        return fs::path();
+    }
 }
 
+    //fs::path ImplManager::generateRandomDirectory(){
+    //     static std::mt19937 rng(std::random_device{}()); 
+    //     static std::uniform_int_distribution<int> dist(1000, 9999); 
+    //     return fs::path("chunk_dir_" + std::to_string(dist(rng)));
+    // }
 

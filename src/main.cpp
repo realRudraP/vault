@@ -47,19 +47,25 @@ int main(){
     }
 }
     
-/*
-int main(){
+
+/*int main(){
     ImplManager implManager;
-    fs::path encryptedFilePath = "C:\\Users\\rudra\\Downloads\\image.jpg"; // Replace with your file path
+    //fs::path encryptedFilePath = "C:\\Users\\rudra\\Downloads\\image.jpg"; // Replace with your file path
+    fs::path encryptedFilePath = "C:\\Users\\saman\\Downloads\\milky-way-2695569_1920.jpg"; // Replace with your file path
     int numChunks = 10; // Number of chunks to split the file into
 
-    std::vector<fs::path> chunkDirs = implManager.splitFile(encryptedFilePath, numChunks);
-    for (const auto& dir : chunkDirs) {
-        std::cout << "Chunk directory: " << dir << std::endl;
-    }
+    // std::vector<fs::path> chunkDirs = implManager.splitFile(encryptedFilePath, numChunks);
+    // for (const auto& dir : chunkDirs) {
+    //     std::cout << "Chunk directory: " << dir << std::endl;
+    // }
+
+    fs::path splitFilePath = implManager.splitFile(encryptedFilePath, numChunks);
+
+    fs::path reconstructeedFilePath = implManager.reconstruct(splitFilePath, numChunks);
+    std::cout<<"Reconstructed file path: "<<reconstructeedFilePath<<std::endl;
+
 
     
 
-    return 0;
-}
-*/
+    return 0; 
+}*/

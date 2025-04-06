@@ -6,25 +6,26 @@
 #include "utils.h"
 #include "manager.h"
 #include "logger.h"
-#include "core.h"
+#include "crypto.h"
+#include <openssl/crypto.h>
 
 namespace fs = std::filesystem;
 
 class VaultManager {
 private:
-    VaultManager() = default; 
+    VaultManager(); 
     VaultManager(const VaultManager&) = delete;
     VaultManager& operator=(const VaultManager&) = delete;
 
     void loadExistingVault(fs::path vaultPath);
     void createNewVault(fs::path vaultPath);
-    VaultMetadata vaultMetadata;
+    
 
 public:
     static VaultManager& getInstance();
-
-    Config config;
-
+    VaultMetadata vaultMetadata;
+    Config config=Config::getInstance();
+    void setVaultMetadata(VaultMetadata data);
     bool initialize();
     bool isInitialized() const;
 };

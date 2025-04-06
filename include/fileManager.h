@@ -6,6 +6,7 @@
 #include<Windows.h>
 #include<Shlobj.h>
 #include<iostream>
+#include "vaultManager.h"
 #include<fstream>
 #include<fstream>
 
@@ -22,5 +23,6 @@ namespace FileManager {
 }
 
 namespace ProtectedFileManager{
+
 };
 #endif

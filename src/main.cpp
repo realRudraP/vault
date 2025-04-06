@@ -6,7 +6,7 @@
 #include <iostream>
 int main(){
     SetConsoleOutputCP(CP_UTF8);
-    Manager manager;
+    Manager::getInstance().initialize();
     std::string inputLine;
     while(true){
         std::cout << "Vault> ";

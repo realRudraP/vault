@@ -15,6 +15,7 @@ namespace fs = std::filesystem;
 namespace Utilities {
 
     std::string takePwdFromUser(const std::string prompt);
+    std::string takePwdOnce(const std::string prompt);
     void securelyClearCharVector(std::vector<char>&);
     std::vector<unsigned char> generateSalt(size_t length);
     std::vector<std::string> tokenize(const std::string& inputLine);

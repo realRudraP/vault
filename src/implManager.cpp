@@ -103,18 +103,18 @@ fs::path ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
 
 
 
-fs::path ImplManager::reconstruct(fs::path sPathForChunks, int numParts) {
-    fs::path sPath = sPathForChunks;
-    std::cout << "[RECONSTRUCTING FUNCTION] Received file path: " << sPath << std::endl;
+fs::path ImplManager::reconstruct(std::vector<fs::path> sPath, int numParts, std::string fileName) {
+    
+    //LOG_INFO("[RECONSTRUCTING FUNCTION] Received vector path: " + to_string(sPath));
 
-    if (!fs::exists(sPath)) {
+    if (sPath.empty() || !fs::exists(sPath[0])) {
         std::cerr << "Source does not exist!" << std::endl;
         return fs::path();
     }
-
+    
     try {
         // Define the output file path
-        fs::path reconstructedFilePath = "reconstructed_output.jpeg";
+        fs::path reconstructedFilePath = fileName;
 
         std::ofstream outputFile(reconstructedFilePath, std::ios::binary);
         if (!outputFile.is_open()) {
@@ -123,7 +123,7 @@ fs::path ImplManager::reconstruct(fs::path sPathForChunks, int numParts) {
         }
 
         for (int i = 0; i < numParts; i++) {
-            fs::path chunkFile = sPath / ("chunk_" + std::to_string(i) + ".bin");
+            fs::path chunkFile = sPath[i]; // ("chunk_" + std::to_string(i) + ".bin");
             std::ifstream inputFile(chunkFile, std::ios::binary);
 
             if (!inputFile.is_open()) {
@@ -159,11 +159,26 @@ fs::path ImplManager::reconstruct(fs::path sPathForChunks, int numParts) {
         std::cerr << "Error during file reconstruction: " << e.what() << std::endl;
         return fs::path();
     }
+
+
 }
 
-    //fs::path ImplManager::generateRandomDirectory(){
-    //     static std::mt19937 rng(std::random_device{}()); 
-    //     static std::uniform_int_distribution<int> dist(1000, 9999); 
-    //     return fs::path("chunk_dir_" + std::to_string(dist(rng)));
-    // }
+std::vector<fs::path> ImplManager::getFiles(const fs::path& dir) {
+        std::vector<fs::path> result;
+        try{
 
+            for (const auto& entry : fs::directory_iterator(dir)) {
+                if (fs::is_regular_file(entry))
+                    result.push_back(entry.path());
+            }
+        
+            //std::sort(result.begin(), result.end()); // Ensure correct order!
+            return result;
+    
+        } catch(const std::exception& e) {
+            std::cerr << "Error reading directory[getFiles]: " << e.what() << std::endl;
+            return std::vector<fs::path>();
+        }
+    }
+    
+    

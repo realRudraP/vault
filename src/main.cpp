@@ -1,10 +1,10 @@
 #include "../include/manager.h"
-#include "../include/utils.h"
+//#include "../include/utils.h"
 #include "../include/implManager.h"
-#include "../include/crypto.h"
+//#include "../include/crypto.h"
 #include "../include/logger.h"
 #include <iostream>
-int main(){
+/*int main(){
     SetConsoleOutputCP(CP_UTF8);
     Manager::getInstance().initialize();
     std::string inputLine;
@@ -45,14 +45,15 @@ int main(){
             }
         }
     }
-}
+}*/
     
 
-/*int main(){
+int main(){
     ImplManager implManager;
     //fs::path encryptedFilePath = "C:\\Users\\rudra\\Downloads\\image.jpg"; // Replace with your file path
     fs::path encryptedFilePath = "C:\\Users\\saman\\Downloads\\milky-way-2695569_1920.jpg"; // Replace with your file path
     int numChunks = 10; // Number of chunks to split the file into
+    std::string fileName = "reconstructedFile.jpeg"; // Name of the reconstructed file
 
     // std::vector<fs::path> chunkDirs = implManager.splitFile(encryptedFilePath, numChunks);
     // for (const auto& dir : chunkDirs) {
@@ -60,12 +61,13 @@ int main(){
     // }
 
     fs::path splitFilePath = implManager.splitFile(encryptedFilePath, numChunks);
+    std::vector<std::filesystem::path> holder = implManager.getFiles(splitFilePath);
+    fs::path reconstructeedFilePath = implManager.reconstruct(holder, numChunks, fileName);
 
-    fs::path reconstructeedFilePath = implManager.reconstruct(splitFilePath, numChunks);
     std::cout<<"Reconstructed file path: "<<reconstructeedFilePath<<std::endl;
 
 
     
 
     return 0; 
-}*/
+}

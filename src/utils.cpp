@@ -32,7 +32,7 @@ std::string Utilities::takePwdOnce(const std::string prompt)
     std::cout << prompt << ": ";
     SetConsoleMode(hStdInput, mode & (~ENABLE_ECHO_INPUT));
     std::getline(std::cin, password);
-
+    SetConsoleMode(hStdInput, mode);
     return password;
 }
 void Utilities::securelyClearCharVector(std::vector<char>& buf)

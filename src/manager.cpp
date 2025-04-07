@@ -93,19 +93,15 @@ bool Manager::saveMetadataEncrypted(const VaultMetadata metadata) {
     fs::path encryptedFile = vaultPath / "metadata.vaultenc";
 
     try {
-        // Serialize metadata to temporary file
         std::ofstream ofs(tempFile, std::ios::binary | std::ios::trunc);
         Serialization::serializeVaultMetadata(ofs, metadata);
         ofs.close();
 
-        // Encrypt and get the actual encrypted path
         Crypto crypto(Manager::getInstance().key);
         fs::path encryptedTemp = crypto.encrypt(tempFile);
 
-        // Move the encrypted file to final destination
         fs::rename(encryptedTemp, encryptedFile);
 
-        // Clean up temp file
         fs::remove(tempFile);
 
         return true;
@@ -130,7 +126,7 @@ bool Manager::loadMetadataEncrypted() {
         VaultManager::getInstance().setVaultMetadata(metadata);
         ifs.close();
 
-        crypto.cleanupFiles(); // Clean decrypted file
+        crypto.cleanupFiles(); 
 
         return true;
     } catch (...) {

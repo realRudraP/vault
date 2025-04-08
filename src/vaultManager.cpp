@@ -192,11 +192,16 @@ while (attemptsLeft > 0) {
                       << " attempt" << (attemptsLeft == 1 ? "" : "s") << " left.\n";
         } else {
             std::cout << "Too many failed attempts. Exiting...\n";
+            OPENSSL_cleanse(pwd.data(), pwd.length());
             exit(1); 
         }
     }
 }
 
     OPENSSL_cleanse(pwd.data(), pwd.length());
+    
+}
+
+bool VaultManager::executor(Command command){
     
 }

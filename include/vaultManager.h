@@ -7,6 +7,7 @@
 #include "manager.h"
 #include "logger.h"
 #include "crypto.h"
+#include "parser.h"
 #include <openssl/crypto.h>
 
 namespace fs = std::filesystem;
@@ -28,6 +29,7 @@ public:
     void setVaultMetadata(VaultMetadata data);
     bool initialize();
     bool isInitialized() const;
+    bool executor(Command command);
 };
 
 #endif

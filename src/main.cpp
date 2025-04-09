@@ -21,7 +21,7 @@ int main(){
         std::cout<< currentPath.generic_string() << ": Vault> ";
         std::getline(std::cin, inputLine);
         std::transform(inputLine.begin(), inputLine.end(), inputLine.begin(),
-                   [](unsigned char c){ return std::tolower(); });
+                   [](unsigned char c){ return std::tolower(c); });
         std::vector<std::string> tokens = Utilities::tokenize(inputLine);
         Command currentCommand = parser.parse(tokens);
         if(!VaultManager::getInstance().executor(currentCommand)){

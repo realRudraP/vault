@@ -35,12 +35,7 @@ std::string Utilities::takePwdOnce(const std::string prompt)
     SetConsoleMode(hStdInput, mode);
     return password;
 }
-void Utilities::securelyClearCharVector(std::vector<char>& buf)
-{
-    std::fill(buf.begin(), buf.end(), 0);
-    buf.clear();
-    buf.shrink_to_fit();
-}
+
 std::vector<unsigned char> Utilities::generateSalt(size_t length)
 {
     std::vector<unsigned char> salt(length);

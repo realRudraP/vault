@@ -114,3 +114,33 @@ void Utilities::changeDirectory(fs::path path)
         std::cerr << "Directory does not exist: " << path << std::endl;
     }
 }
+
+std::string Utilities::generateUUID(){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 15);
+
+    auto randHex = [&]() -> char {
+        int val = dis(gen);
+        return "0123456789abcdef"[val];
+    };
+
+    std::stringstream ss;
+
+    for (int i = 0; i < 8; ++i) ss << randHex();
+    ss << "-";
+    for (int i = 0; i < 4; ++i) ss << randHex();
+    ss << "-4"; // UUID version 4
+    for (int i = 0; i < 3; ++i) ss << randHex();
+    ss << "-";
+    ss << "89ab"[dis(gen) % 4]; // variant bits
+    for (int i = 0; i < 3; ++i) ss << randHex();
+    ss << "-";
+    for (int i = 0; i < 12; ++i) ss << randHex();
+
+    return ss.str();
+}
+
+bool Utilities::securelyDeleteFile(fs::path path,size_t numberOfPasses){
+    fs::remove(path);
+}

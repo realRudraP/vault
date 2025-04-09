@@ -20,7 +20,7 @@ private:
 
     void loadExistingVault(fs::path vaultPath);
     void createNewVault(fs::path vaultPath);
-    
+    fs::path getRandomFolder();
 
 public:
     static VaultManager& getInstance();
@@ -30,6 +30,7 @@ public:
     bool initialize();
     bool isInitialized() const;
     bool executor(Command command);
+    void printStoredFiles();
 };
 
 #endif

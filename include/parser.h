@@ -12,33 +12,31 @@ enum BaseCommand {
     HELP,
     SDELETE,
     TRIVIAL,
+    ENCRYPT,
+    DECRYPT,
+    LIST,
     INVALID,
     EXIT
 };
 
-enum CommandType {
-    ENCRYPT,
-    DECRYPT,
-    CHUNK,
-    SDELETE,
-    INVALID
-};
-
 class Command{
+    public:
     BaseCommand baseCommand;
-    std::optional<std::vector<CommandType>> options;
+    bool secureDelete;
     std::optional<fs::path> filePath;
     std::optional<std::string> internalName;  
-    public:
-    Command(BaseCommand base,std::optional<std::vector<CommandType>> opts,std::optional<fs::path> path, std::optional<std::string> internalName){
+    Command(BaseCommand base, bool secureDelete, std::optional<fs::path> path, std::optional<std::string> internalName){
         this->baseCommand = base;
-        options=opts;
+        this->secureDelete = secureDelete;
         filePath=path;
         this->internalName = internalName;
     }
-    Command() { this->baseCommand = BaseCommand::INVALID; };
+    Command() { 
+        this->baseCommand = BaseCommand::INVALID;
+        this->secureDelete = false;
+    };
     static Command makeTrivialCommand(){
-        return Command(BaseCommand::TRIVIAL, std::nullopt, std::nullopt, std::nullopt);
+        return Command(BaseCommand::TRIVIAL, false, std::nullopt, std::nullopt);
     }
 };
 

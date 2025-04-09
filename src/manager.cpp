@@ -134,5 +134,11 @@ bool Manager::loadMetadataEncrypted() {
     }
 }
 
+Manager::~Manager() {
+    OPENSSL_cleanse(this->key.data(), this->key.size());
+}
 
+void Manager::displayHelp(){
+    std::cout << "This is the help menu" << std::endl;
+}
 

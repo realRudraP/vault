@@ -45,13 +45,16 @@ class Manager {
     Manager()=default;
     std::vector<unsigned char> key;
     bool loadMetadataEncrypted();
+    friend class VaultManager;
 public:
     static Manager& getInstance();
     bool initialize();
     void changeDirectory(fs::path path);
     bool userPasswordValidation(std::string password);
     bool saveMetadataEncrypted(const VaultMetadata metadata);
+    static void displayHelp();
     
+    ~Manager();
 };
 
 

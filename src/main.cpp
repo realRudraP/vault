@@ -4,6 +4,8 @@
 #include "../include/logger.h"
 #include "../include/manager.h"
 #include "../include/utils.h"
+#include "../include/parser.h"
+#include "../include/vaultManager.h"
 #include <filesystem>
 #include <iostream>
 
@@ -13,14 +15,18 @@ int main(){
     SetConsoleOutputCP(CP_UTF8);
     Manager::getInstance().initialize();
     std::string inputLine;
+    Parser parser;
     while(true){
         fs::path currentPath = fs::current_path();
         std::cout<< currentPath.generic_string() << ": Vault> ";
         std::getline(std::cin, inputLine);
         std::transform(inputLine.begin(), inputLine.end(), inputLine.begin(),
-                   [](unsigned char c){ return std::tolower(c); });
+                   [](unsigned char c){ return std::tolower(); });
         std::vector<std::string> tokens = Utilities::tokenize(inputLine);
-        
+        Command currentCommand = parser.parse(tokens);
+        if(!VaultManager::getInstance().executor(currentCommand)){
+            std::cerr << "Error ho gaya bhai" << std::endl;
+        }
     }
 }
 

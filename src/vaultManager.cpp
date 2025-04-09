@@ -1,30 +1,35 @@
 #include "../include/vaultManager.h"
 
-VaultManager::VaultManager(){
+VaultManager::VaultManager()
+{
     config = Config::getInstance();
 }
-VaultManager& VaultManager::getInstance() {
+VaultManager& VaultManager::getInstance()
+{
     static VaultManager instance; // Guaranteed to be destroyed and instantiated on first use
     return instance;
 }
 
-bool VaultManager::initialize() {
+bool VaultManager::initialize()
+{
     fs::path vaultFilePath = FileManager::getSpecialFolderPath(FOLDERID_ProgramData) / "Vault" / "vault";
-    if(!FileManager::checkFileExists(vaultFilePath)){
+    if (!FileManager::checkFileExists(vaultFilePath)) {
         VaultManager::createNewVault(vaultFilePath);
-    }else{
+    } else {
         VaultManager::loadExistingVault(vaultFilePath);
     }
     return true;
 }
 
-void VaultManager::setVaultMetadata(VaultMetadata data){
+void VaultManager::setVaultMetadata(VaultMetadata data)
+{
     this->vaultMetadata = data;
 }
 
-void VaultManager::createNewVault(fs::path vaultPath) {
-     // The R"" syntax is used 
-    // for raw string literals, allowing to include special 
+void VaultManager::createNewVault(fs::path vaultPath)
+{
+    // The R"" syntax is used
+    // for raw string literals, allowing to include special
     // characters without escaping them.
     std::cout << R"(          
         ╔════════════════════════════════════════════════════════╗
@@ -56,12 +61,12 @@ void VaultManager::createNewVault(fs::path vaultPath) {
         ║  (This may slow down deletion slightly.)               ║
         ╚════════════════════════════════════════════════════════╝
         )" << std::endl;
-        
-        bool enableSecureDeletion = Utilities::getBoolFromUser("Enable secure deletion?", false);
-        config.enableSecureDeletion = enableSecureDeletion;
-        
-        if (enableSecureDeletion) {
-            std::cout << R"(
+
+    bool enableSecureDeletion = Utilities::getBoolFromUser("Enable secure deletion?", false);
+    config.enableSecureDeletion = enableSecureDeletion;
+
+    if (enableSecureDeletion) {
+        std::cout << R"(
         ╔════════════════════════════════════════════════════════╗
         ║          Secure Deletion Passes Configuration          ║
         ╠════════════════════════════════════════════════════════╣
@@ -72,15 +77,15 @@ void VaultManager::createNewVault(fs::path vaultPath) {
         ║  Recommended: 3 passes for general use                 ║
         ╚════════════════════════════════════════════════════════╝
         )" << std::endl;
-        
-            int passes = Utilities::getPositiveIntFromUser("How many passes would you like?", 3);
-            config.secureDeletionPasses = passes;
-        } else {
-            config.secureDeletionPasses = 0;
-        }
-        config.salt = Utilities::generateSalt(16);
-        config.saveConfig();
-        std::cout << R"(
+
+        int passes = Utilities::getPositiveIntFromUser("How many passes would you like?", 3);
+        config.secureDeletionPasses = passes;
+    } else {
+        config.secureDeletionPasses = 0;
+    }
+    config.salt = Utilities::generateSalt(16);
+    config.saveConfig();
+    std::cout << R"(
             ╔════════════════════════════════════════════════════════╗
             ║             Vault Storage Folder Setup                 ║
             ╠════════════════════════════════════════════════════════╣
@@ -94,75 +99,76 @@ void VaultManager::createNewVault(fs::path vaultPath) {
             ║  Type 'done' to finish selection.                      ║
             ╚════════════════════════════════════════════════════════╝
         )" << std::endl;
-        
-        std::vector<std::pair<std::string, fs::path>> defaultLocations = {
-            {"Documents", FileManager::getSpecialFolderPath(FOLDERID_Documents)},
-            {"Downloads", FileManager::getSpecialFolderPath(FOLDERID_Downloads)},
-            {"Pictures",  FileManager::getSpecialFolderPath(FOLDERID_Pictures)},
-            {"Videos",    FileManager::getSpecialFolderPath(FOLDERID_Videos)},
-            {"Desktop",   FileManager::getSpecialFolderPath(FOLDERID_Desktop)},
-            {"AppData",   FileManager::getSpecialFolderPath(FOLDERID_RoamingAppData)}
-        };
-        
-        for (size_t i = 0; i < defaultLocations.size(); ++i) {
-            std::cout << "  [" << i + 1 << "] " << defaultLocations[i].first 
-                      << " (" << defaultLocations[i].second << ")\n";
-        }
-        std::cout << "  [7] Enter a custom absolute path\n";
-        std::cout << "  [done] Finish setup\n\n";
-        
-        std::string input;
-        while (true) {
-            std::cout << "Enter your choice: ";
-            std::getline(std::cin, input);
-        
-            if (input == "done") {
-                if (vaultMetadata.foldersToStore.empty()) {
-                    std::cout << "You must select at least one folder before finishing setup.\n";
-                    continue;
-                }
-                break;
-            }
-        
-            fs::path selectedPath;
-            if (input == "7") {
-                std::cout << "\nEnter full absolute path: ";
-                std::getline(std::cin, input);
-                selectedPath = fs::path(input);
-            } else {
-                int index;
-                try {
-                    index = std::stoi(input) - 1;
-                } catch (...) {
-                    std::cout << "Invalid input. Please enter a number or 'done'.\n";
-                    continue;
-                }
-        
-                if (index >= 0 && index < static_cast<int>(defaultLocations.size())) {
-                    selectedPath = defaultLocations[index].second;
-                } else {
-                    std::cout << "Invalid choice. Try again.\n";
-                    continue;
-                }
-            }
-        
-            if (!fs::exists(selectedPath)) {
-                std::cout << "Path does not exist: " << selectedPath << "\n";
+
+    std::vector<std::pair<std::string, fs::path>> defaultLocations = {
+        { "Documents", FileManager::getSpecialFolderPath(FOLDERID_Documents) },
+        { "Downloads", FileManager::getSpecialFolderPath(FOLDERID_Downloads) },
+        { "Pictures", FileManager::getSpecialFolderPath(FOLDERID_Pictures) },
+        { "Videos", FileManager::getSpecialFolderPath(FOLDERID_Videos) },
+        { "Desktop", FileManager::getSpecialFolderPath(FOLDERID_Desktop) },
+        { "AppData", FileManager::getSpecialFolderPath(FOLDERID_RoamingAppData) }
+    };
+
+    for (size_t i = 0; i < defaultLocations.size(); ++i) {
+        std::cout << "  [" << i + 1 << "] " << defaultLocations[i].first
+                  << " (" << defaultLocations[i].second << ")\n";
+    }
+    std::cout << "  [7] Enter a custom absolute path\n";
+    std::cout << "  [done] Finish setup\n\n";
+
+    std::string input;
+    while (true) {
+        std::cout << "Enter your choice: ";
+        std::getline(std::cin, input);
+
+        if (input == "done") {
+            if (vaultMetadata.foldersToStore.empty()) {
+                std::cout << "You must select at least one folder before finishing setup.\n";
                 continue;
             }
-        
+            break;
+        }
+
+        fs::path selectedPath;
+        if (input == "7") {
+            std::cout << "\nEnter full absolute path: ";
+            std::getline(std::cin, input);
+            selectedPath = fs::path(input);
+        } else {
+            int index;
             try {
-                fs::path hiddenVaultFolder = FileManager::createHiddenVaultFolder(selectedPath);
-                vaultMetadata.foldersToStore.push_back(hiddenVaultFolder);
-            } catch (const std::exception& e) {
-                std::cout << " Failed to create hidden folder: " << e.what() << "\n";
+                index = std::stoi(input) - 1;
+            } catch (...) {
+                std::cout << "Invalid input. Please enter a number or 'done'.\n";
+                continue;
+            }
+
+            if (index >= 0 && index < static_cast<int>(defaultLocations.size())) {
+                selectedPath = defaultLocations[index].second;
+            } else {
+                std::cout << "Invalid choice. Try again.\n";
+                continue;
             }
         }
-        if(!Manager::getInstance().saveMetadataEncrypted(vaultMetadata)){
-            std::cerr<<"Error in saving metadata."<<std::endl;
+
+        if (!fs::exists(selectedPath)) {
+            std::cout << "Path does not exist: " << selectedPath << "\n";
+            continue;
         }
+
+        try {
+            fs::path hiddenVaultFolder = FileManager::createHiddenVaultFolder(selectedPath);
+            vaultMetadata.foldersToStore.push_back(hiddenVaultFolder);
+        } catch (const std::exception& e) {
+            std::cout << " Failed to create hidden folder: " << e.what() << "\n";
+        }
+    }
+    if (!Manager::getInstance().saveMetadataEncrypted(vaultMetadata)) {
+        std::cerr << "Error in saving metadata." << std::endl;
+    }
 }
-void VaultManager::loadExistingVault(fs::path vaultPath) {
+void VaultManager::loadExistingVault(fs::path vaultPath)
+{
     config.loadConfig(vaultPath);
     std::cout << R"(
         ╔════════════════════════════════════════════════════════╗
@@ -177,31 +183,129 @@ void VaultManager::loadExistingVault(fs::path vaultPath) {
         ╚════════════════════════════════════════════════════════╝
     )" << std::endl;
     std::string pwd;
-int attemptsLeft = 3;
+    int attemptsLeft = 3;
 
-while (attemptsLeft > 0) {
-    pwd = Utilities::takePwdOnce("Enter your password");
+    while (attemptsLeft > 0) {
+        pwd = Utilities::takePwdOnce("Enter your password");
 
-    if (Manager::getInstance().userPasswordValidation(pwd)) {
-        std::cout << "Access granted. Welcome back!\n";
-        break;
-    } else {
-        --attemptsLeft;
-        if (attemptsLeft > 0) {
-            std::cout << "Incorrect password. You have " << attemptsLeft 
-                      << " attempt" << (attemptsLeft == 1 ? "" : "s") << " left.\n";
+        if (Manager::getInstance().userPasswordValidation(pwd)) {
+            std::cout << "Access granted. Welcome back!\n";
+            break;
         } else {
-            std::cout << "Too many failed attempts. Exiting...\n";
-            OPENSSL_cleanse(pwd.data(), pwd.length());
-            exit(1); 
+            --attemptsLeft;
+            if (attemptsLeft > 0) {
+                std::cout << "Incorrect password. You have " << attemptsLeft
+                          << " attempt" << (attemptsLeft == 1 ? "" : "s") << " left.\n";
+            } else {
+                std::cout << "Too many failed attempts. Exiting...\n";
+                OPENSSL_cleanse(pwd.data(), pwd.length());
+                exit(1);
+            }
         }
     }
-}
 
     OPENSSL_cleanse(pwd.data(), pwd.length());
-    
 }
 
-bool VaultManager::executor(Command command){
-    
+bool VaultManager::executor(Command command)
+{
+    if (command.baseCommand == BaseCommand::HELP) {
+        Manager::displayHelp();
+        return true;
+    } else if (command.baseCommand == BaseCommand::TRIVIAL) {
+        return true;
+    } else if (command.baseCommand == BaseCommand::EXIT) {
+        std::cout << "Exiting gracefully" << std::endl;
+        exit(0);
+    } else if (command.baseCommand == BaseCommand::ADD) {
+        Crypto cryp(Manager::getInstance().key);
+        fs::path encPath = cryp.encrypt(command.filePath.value());
+        LOG_WARN("Encrypted file path: "+encPath.string());
+        fs::path chunkDir = ImplManager().splitFile(encPath, 10);
+        FileInfo fileInfo;
+        fileInfo.filename = command.internalName.value();
+        fileInfo.file_size = fs::file_size(command.filePath.value());
+        size_t index = 0;
+        std::vector<fs::path> chunks;
+        for (const auto& file : fs::directory_iterator(chunkDir)) {
+            chunks.push_back(file.path());
+        }
+        std::sort(chunks.begin(), chunks.end(), [](const fs::path& a, const fs::path& b) {
+            return a.filename().string() < b.filename().string();
+        });
+        try {
+            for (const auto file : chunks) {
+                fs::path randomFolder = getRandomFolder();
+                std::string randomName = Utilities::generateUUID() + ".vaultenc";
+                fs::path newPath = randomFolder / randomName;
+                fs::copy_file(file, newPath, fs::copy_options::overwrite_existing);
+                ChunkInfo chunkInfo;
+                chunkInfo.order_index = index++;
+                chunkInfo.chunk_path = newPath;
+                fileInfo.chunks.push_back(chunkInfo);
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error in adding file: " << e.what() << std::endl;
+        }
+        vaultMetadata.files.push_back(fileInfo);
+        Manager::getInstance().saveMetadataEncrypted(vaultMetadata);
+    } else if (command.baseCommand == BaseCommand::FETCH) {
+        FileInfo storedFile;
+        bool found = false;
+        for (const auto file : vaultMetadata.files) {
+            if (file.filename == command.internalName.value()) {
+                storedFile = file;
+                found = true;
+                break;
+            }
+        }
+        std::vector<ChunkInfo> chunks = storedFile.chunks;
+
+        std::sort(chunks.begin(), chunks.end(), [](const ChunkInfo& a, const ChunkInfo& b) {
+            return a.order_index < b.order_index;
+        });
+
+        std::vector<fs::path> chunkPaths;
+        chunkPaths.reserve(chunks.size()); // optional, avoids reallocations
+
+        for (const auto& chunk : chunks) {
+            chunkPaths.push_back(chunk.chunk_path);
+        }
+
+        fs::path gluedTogetherFile = ImplManager().reconstruct(chunkPaths,10,storedFile.filename);
+        Crypto cry(Manager::getInstance().key);
+        fs::path decryptedFile=cry.decrypt(gluedTogetherFile);
+        LOG_WARN("Decrypted file path: " + decryptedFile.string());
+    }else if(command.baseCommand==BaseCommand::ENCRYPT){
+        Crypto cry(Manager::getInstance().key);
+        fs::path encFile = cry.encrypt(command.filePath.value());
+        fs::copy_file(encFile, "encrypted_file.wtf");
+    }else if(command.baseCommand==BaseCommand::DECRYPT){
+        Crypto cry(Manager::getInstance().key);
+        fs::path decFile = cry.decrypt(command.filePath.value());
+        fs::copy_file(decFile, "gotitback.png");
+    }else if(command.baseCommand==BaseCommand::LIST){
+        this->printStoredFiles();
+        return true;
+    }
+}
+fs::path VaultManager::getRandomFolder()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, vaultMetadata.foldersToStore.size() - 1);
+    return vaultMetadata.foldersToStore[dis(gen)];
+}
+
+void VaultManager::printStoredFiles() {
+    std::cout << "=== Stored Files ===\n";
+    const auto files = this->vaultMetadata.files;
+    if (files.empty()) {
+        std::cout << "No files stored.\n";
+    } else {
+        for (const auto& file : files) {
+            std::cout << "- " << file.filename << "\n";
+        }
+    }
+    std::cout << "====================\n";
 }

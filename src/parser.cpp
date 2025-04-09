@@ -17,16 +17,16 @@ Command Parser::parse(std::vector<std::string> args)
     if (args[0] == "add") {
         if (args.size() < 2) {
             std::cerr << "Add command requires a file path" << std::endl;
-            return Command(BaseCommand::INVALID, std::nullopt, std::nullopt, std::nullopt);
+            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         fs::path inputPath = args[1];
         if (!fs::exists(inputPath)) {
             std::cerr << "File does not exist: " << inputPath << std::endl;
-            return Command(BaseCommand::INVALID, std::nullopt, std::nullopt, std::nullopt);
+            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         if (fs::is_directory(inputPath)) {
             std::cerr << "Vault currently doesn't support adding directories: " << inputPath << std::endl;
-            return Command(BaseCommand::INVALID, std::nullopt, std::nullopt, std::nullopt);
+            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         std::optional<std::string> internalName = std::nullopt;
         auto it = std::find(args.begin() + 2, args.end(), "-name");
@@ -36,10 +36,17 @@ Command Parser::parse(std::vector<std::string> args)
             internalName = inputPath.filename().string();
         }
         if (std::find(args.begin() + 2, args.end(), "-sdel") != args.end()) {
-            secureDeleteFlag = true;
+            command = Command(BaseCommand::ADD, true, inputPath, internalName);
+        } else {
+            command = Command(BaseCommand::ADD, false, inputPath, internalName);
         }
-
+        return command;
     } else if (args[0] == "fetch") {
+        if(args.size()!=2){
+            std::cerr << "Expected fetch <filename>";
+            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+        }
+        return Command(BaseCommand::FETCH, false, std::nullopt, args[1]);
 
     } else if (args[0] == "delete") {
 
@@ -47,12 +54,12 @@ Command Parser::parse(std::vector<std::string> args)
         if (args.size() > 1) {
             std::cout << "Recieved help command. Ignoring rest of the line" << std::endl;
         }
-        return Command(BaseCommand::HELP, std::nullopt, std::nullopt, std::nullopt);
+        return Command(BaseCommand::HELP, false, std::nullopt, std::nullopt);
     } else if (args[0] == "exit") {
         if (args.size() > 1) {
             std::cout << "Recieved exit command. Ignoring rest of the line" << std::endl;
         }
-        return Command(BaseCommand::EXIT, std::nullopt, std::nullopt, std::nullopt);
+        return Command(BaseCommand::EXIT, false, std::nullopt, std::nullopt);
     } else if (args[0] == "ls" || args[0] == "dir") {
         if (args.size() == 2) {
             fs::path path = fs::path(args[1]);
@@ -80,5 +87,29 @@ Command Parser::parse(std::vector<std::string> args)
             std::cout << "Usage: cd <directory>" << std::endl;
         }
         return Command::makeTrivialCommand();
+    }else if(args[0]=="encrypt"){
+        if(args.size()<2){
+            std::cerr << "Expected filepath after encrypt" << std::endl;
+            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+        }
+        fs::path filePath = fs::path(args[1]);
+        if(fs::exists(filePath)){
+            return Command(BaseCommand::ENCRYPT, false, filePath, std::nullopt);
+        }
+    }else if(args[0]=="decrypt"){
+        if(args.size()<2){
+            std::cerr << "Expected filepath after decrypt" << std::endl;
+            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+        }
+        fs::path filePath = fs::path(args[1]);
+        if(fs::exists(filePath)){
+            return Command(BaseCommand::DECRYPT, false, filePath, std::nullopt);
+        }
+    }else if(args[0]=="list"){
+        if(args.size()>1){
+            std::cout << "Received list command. Ignoring rest of line" << std::endl;
+            
+        }
+        return Command(BaseCommand::LIST, false, std::nullopt, std::nullopt);
     }
 }

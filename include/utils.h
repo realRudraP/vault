@@ -24,7 +24,7 @@ namespace Utilities {
     void printHex(const std::vector<unsigned char>& data);
     void changeDirectory(fs::path path);
     std::string generateUUID();
-    bool securelyDeleteFile(fs::path path, size_t numberOfPasses);
+    bool deleteFile(fs::path path,bool deleteSecurely, size_t numberOfPasses);
 }
 
 #endif // VAULT_UTILS_H

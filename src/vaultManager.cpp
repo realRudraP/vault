@@ -218,10 +218,15 @@ bool VaultManager::executor(Command command)
         std::cout << "Exiting gracefully" << std::endl;
         exit(0);
     } else if (command.baseCommand == BaseCommand::ADD) {
+        std::cout << "Encrypting file..." << std::endl;
         Crypto cryp(Manager::getInstance().key);
         fs::path encPath = cryp.encrypt(command.filePath.value());
         LOG_WARN("Encrypted file path: "+encPath.string());
+        std::cout << Color::GREEN << "Done\n"
+                  << Color::RESET << "Chunking encrypted file.." << std::endl;
         fs::path chunkDir = ImplManager().splitFile(encPath, 10);
+        std::cout << Color::GREEN << "Done\n"
+                  << Color::RESET << "Scrambling across your filesystem.." << std::endl;
         FileInfo fileInfo;
         fileInfo.filename = command.internalName.value();
         fileInfo.file_size = fs::file_size(command.filePath.value());
@@ -235,7 +240,15 @@ bool VaultManager::executor(Command command)
         });
         try {
             for (const auto file : chunks) {
-                fs::path randomFolder = getRandomFolder();
+                fs::path randomFolder;
+                size_t tries = 0;
+                do{
+                    randomFolder = VaultManager::getRandomFolder();
+                    if(tries++>5){
+                        std::cerr << "Failed to find cover directories for 5 times. Please check your configuration." << std::endl;
+                        throw std::runtime_error("Cover directories not found.");
+                    }
+                }while(!fs::exists(randomFolder));
                 std::string randomName = Utilities::generateUUID() + ".vaultenc";
                 fs::path newPath = randomFolder / randomName;
                 fs::copy_file(file, newPath, fs::copy_options::overwrite_existing);
@@ -246,9 +259,24 @@ bool VaultManager::executor(Command command)
             }
         } catch (const std::exception& e) {
             std::cerr << "Error in adding file: " << e.what() << std::endl;
+            std::cerr << Color::RED << "Cleaning up.." << std::endl;
+            for(const auto ele:fileInfo.chunks){
+                Utilities::deleteFile(ele.chunk_path,command.secureDelete,config.secureDeletionPasses);
+            }
+            Utilities::deleteFile(encPath, command.secureDelete, config.secureDeletionPasses);
+            Utilities::deleteFile(chunkDir, command.secureDelete, config.secureDeletionPasses);
+            std::cerr << Color::YELLOW << "Done.\n Exiting without completing operation" << Color::RESET << std::endl;
+            return false;
         }
         vaultMetadata.files.push_back(fileInfo);
         Manager::getInstance().saveMetadataEncrypted(vaultMetadata);
+        std::cout << Color::GREEN << "Done\n"
+                  << Color::RESET << "Cleaning up.." << std::endl;
+        Utilities::deleteFile(command.filePath.value(),command.secureDelete,config.secureDeletionPasses);
+        Utilities::deleteFile(encPath, command.secureDelete, config.secureDeletionPasses);
+        Utilities::deleteFile(chunkDir, command.secureDelete, config.secureDeletionPasses);
+        std::cout << Color::GREEN << "Done\n"
+                  << Color::RESET << "Your file has been added to the vault!" << std::endl;
     } else if (command.baseCommand == BaseCommand::FETCH) {
         FileInfo storedFile;
         bool found = false;

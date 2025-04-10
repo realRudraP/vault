@@ -19,7 +19,7 @@ std::string Utilities::takePwdFromUser(const std::string prompt)
             std::cout << "Passwords do not match. Please try again.\n";
         }
     } while (password1 != password2);
-
+    OPENSSL_cleanse(password2.data(), password2.length());
     return password1;
 }
 std::string Utilities::takePwdOnce(const std::string prompt)
@@ -136,6 +136,30 @@ std::string Utilities::generateUUID(){
     return ss.str();
 }
 
-bool Utilities::securelyDeleteFile(fs::path path,size_t numberOfPasses){
-    fs::remove(path);
+bool Utilities::deleteFile(fs::path path,bool deleteSecurely,size_t numberOfPasses){
+    if(deleteSecurely){
+        /*
+            Add secure deletion logic here
+        */
+    }else{
+        try{
+            if(!fs::exists(path)){
+                std::cerr << "Deletion failed. Path " << path.string() << " was not found";
+                return false;
+            }
+            if(fs::is_directory(path)){
+                for(const auto& entry:fs::directory_iterator(path)){
+                    Utilities::deleteFile(entry.path(), false, 1); // Recursive call to empty directories
+                }
+                fs::remove(path);
+                return true;
+            }else{
+                fs::remove(path);
+                return true;
+            }
+        }catch(const std::exception& e){
+            std::cerr << "Error in deleting file " << path.string() << " : " << e.what() << std::endl;
+            return false;
+        }
+    }
 }

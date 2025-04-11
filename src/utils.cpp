@@ -137,11 +137,64 @@ std::string Utilities::generateUUID(){
 }
 
 bool Utilities::deleteFile(fs::path path,bool deleteSecurely,size_t numberOfPasses){
-    if(deleteSecurely){
-        /*
-            Add secure deletion logic here
-        */
-    }else{
+    if (deleteSecurely) {
+        try {
+            if (!fs::exists(path) || !fs::is_regular_file(path)) {
+                std::cerr << "Secure deletion is only supported for regular files. Skipping: " << path << std::endl;
+                return false;
+            }
+    
+            std::error_code ec;
+            std::uintmax_t fileSize = fs::file_size(path, ec);
+            if (ec || fileSize == 0) {
+                std::cerr << "Error getting file size or file is empty: " << ec.message() << std::endl;
+                return false;
+            }
+    
+            for (size_t pass = 0; pass < numberOfPasses; ++pass) {
+                std::vector<unsigned char> randomData(fileSize);
+                if (RAND_bytes(randomData.data(), static_cast<int>(fileSize)) != 1) {
+                    std::cerr << "Failed to generate cryptographically secure random data.\n";
+                    return false;
+                }
+    
+                HANDLE hFile = CreateFileW(
+                    path.wstring().c_str(),
+                    GENERIC_WRITE,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL
+                );
+    
+                if (hFile == INVALID_HANDLE_VALUE) {
+                    std::cerr << "Failed to open file for secure overwrite: " << path << std::endl;
+                    return false;
+                }
+    
+                DWORD bytesWritten;
+                if (!WriteFile(hFile, randomData.data(), static_cast<DWORD>(fileSize), &bytesWritten, NULL) || bytesWritten != fileSize) {
+                    std::cerr << "Failed to write random data to file: " << path << std::endl;
+                    CloseHandle(hFile);
+                    return false;
+                }
+    
+                if (!FlushFileBuffers(hFile)) {
+                    std::cerr << "Failed to flush file buffers for: " << path << std::endl;
+                }
+    
+                CloseHandle(hFile);
+                OPENSSL_cleanse(randomData.data(), randomData.size());
+            }
+    
+            return fs::remove(path);
+        } catch (const std::exception& e) {
+            std::cerr << "Secure deletion failed for " << path << " : " << e.what() << std::endl;
+            return false;
+        }
+    }
+    else{
         try{
             if(!fs::exists(path)){
                 std::cerr << "Deletion failed. Path " << path.string() << " was not found";

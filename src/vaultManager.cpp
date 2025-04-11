@@ -66,17 +66,25 @@ void VaultManager::createNewVault(fs::path vaultPath)
     config.enableSecureDeletion = enableSecureDeletion;
 
     if (enableSecureDeletion) {
-        std::cout << R"(
-        ╔════════════════════════════════════════════════════════╗
-        ║          Secure Deletion Passes Configuration          ║
-        ╠════════════════════════════════════════════════════════╣
-        ║  You can choose how many times the file data should be ║
-        ║  overwritten before being deleted.                     ║
-        ║                                                        ║
-        ║  More passes = Better security, but slower deletion.   ║
-        ║  Recommended: 3 passes for general use                 ║
-        ╚════════════════════════════════════════════════════════╝
-        )" << std::endl;
+        std::cout << R"( 
+            ╔════════════════════════════════════════════════════════════════════╗
+            ║              Secure Deletion Passes Configuration                  ║
+            ╠════════════════════════════════════════════════════════════════════╣
+            ║  You can choose how many times the file data should be             ║
+            ║  overwritten before deletion.                                      ║
+            ║                                                                    ║
+            ║  More passes = Better security (on HDDs), but slower deletion.     ║
+            ║                                                                    ║
+            ║  Note for SSDs:                                                    ║
+            ║  Due to wear leveling, SSDs may redirect overwrite operations to   ║
+            ║  different physical locations. This means multiple passes may not  ║
+            ║  reliably erase the original data.                                 ║
+            ║                                                                    ║
+            ║  For SSDs, it's recommended to use manufacturer-provided secure    ║
+            ║  erase tools or full-disk encryption with secure key destruction.  ║
+            ╚════════════════════════════════════════════════════════════════════╝
+            )" << std::endl;
+            
 
         int passes = Utilities::getPositiveIntFromUser("How many passes would you like?", 3);
         config.secureDeletionPasses = passes;
@@ -100,14 +108,15 @@ void VaultManager::createNewVault(fs::path vaultPath)
             ╚════════════════════════════════════════════════════════╝
         )" << std::endl;
 
-    std::vector<std::pair<std::string, fs::path>> defaultLocations = {
-        { "Documents", FileManager::getSpecialFolderPath(FOLDERID_Documents) },
-        { "Downloads", FileManager::getSpecialFolderPath(FOLDERID_Downloads) },
-        { "Pictures", FileManager::getSpecialFolderPath(FOLDERID_Pictures) },
-        { "Videos", FileManager::getSpecialFolderPath(FOLDERID_Videos) },
-        { "Desktop", FileManager::getSpecialFolderPath(FOLDERID_Desktop) },
-        { "AppData", FileManager::getSpecialFolderPath(FOLDERID_RoamingAppData) }
-    };
+        std::vector<std::pair<std::string, fs::path>> defaultLocations = {
+            { "Temp", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) / "Temp" },
+            { "Public", FileManager::getSpecialFolderPath(FOLDERID_Public) },
+            { "ProgramData", FileManager::getSpecialFolderPath(FOLDERID_ProgramData) },
+            { "LocalAppData", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) },
+            { "UserProfile", FileManager::getSpecialFolderPath(FOLDERID_Profile) },
+            { "RecycleBinCandidate", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) / "Microsoft" / "Windows" / "INetCache" }
+        };
+        
 
     for (size_t i = 0; i < defaultLocations.size(); ++i) {
         std::cout << "  [" << i + 1 << "] " << defaultLocations[i].first
@@ -277,8 +286,13 @@ bool VaultManager::executor(Command command)
         Utilities::deleteFile(chunkDir, command.secureDelete, config.secureDeletionPasses);
         std::cout << Color::GREEN << "Done\n"
                   << Color::RESET << "Your file has been added to the vault!" << std::endl;
+        return true;
     } else if (command.baseCommand == BaseCommand::FETCH) {
+
+        std::cout << "Searching for file in database..." << std::endl;
         FileInfo storedFile;
+        fs::path gluedTogetherFile;
+        fs::path decryptedFile;
         bool found = false;
         for (const auto file : vaultMetadata.files) {
             if (file.filename == command.internalName.value()) {
@@ -287,27 +301,60 @@ bool VaultManager::executor(Command command)
                 break;
             }
         }
+        if(!found){
+            std::cerr << Color::RED << "Error: File " << command.internalName.value() << " was not found in your vault." << Color::RESET << std::endl;
+            return false;
+        }
+        std::cout << Color::GREEN << "Done.\n" << Color::RESET<<"Finding,collecting and sorting chunks.." << std::endl;
         std::vector<ChunkInfo> chunks = storedFile.chunks;
 
         std::sort(chunks.begin(), chunks.end(), [](const ChunkInfo& a, const ChunkInfo& b) {
             return a.order_index < b.order_index;
         });
-
+        
         std::vector<fs::path> chunkPaths;
-        chunkPaths.reserve(chunks.size()); // optional, avoids reallocations
+        chunkPaths.reserve(chunks.size()); 
 
         for (const auto& chunk : chunks) {
             chunkPaths.push_back(chunk.chunk_path);
         }
-
-        fs::path gluedTogetherFile = ImplManager().reconstruct(chunkPaths,10,storedFile.filename);
+        std::cout << Color::GREEN << "Done\n" << Color::RESET;
+        std::cout << "Reconstructing encrypted file from chunks..." << std::endl;
+        try{
+        gluedTogetherFile = ImplManager().reconstruct(chunkPaths,10,storedFile.filename);
+        std::cout << Color::GREEN << "Done\n" << Color::RESET;
+        std::cout << "Decrypting file..." << std::endl;
+        std::cout << Color::GREEN << "Done\n" << Color::RESET;
         Crypto cry(Manager::getInstance().key);
-        fs::path decryptedFile=cry.decrypt(gluedTogetherFile);
+        decryptedFile=cry.decrypt(gluedTogetherFile);
+        
         LOG_WARN("Decrypted file path: " + decryptedFile.string());
+        return true;
+        }catch(std::exception&e){
+            std::cerr << Color::RED << "Error during file fetch: " << e.what() << Color::RESET << std::endl;
+            std::cerr << Color::YELLOW << "Cleaning up intermediate files..." << Color::RESET << std::endl;
+            if (!gluedTogetherFile.empty() && fs::exists(gluedTogetherFile)) {
+                Utilities::deleteFile(gluedTogetherFile, command.secureDelete, config.secureDeletionPasses);
+            }
+            if (!decryptedFile.empty() && fs::exists(decryptedFile)) {
+                
+               Utilities::deleteFile(decryptedFile, command.secureDelete, config.secureDeletionPasses);
+           }
+           std::cerr << Color::GREEN << "Done.\n" << Color::YELLOW << "Exiting without completing operation." << Color::RESET << std::endl;
+        return false; 
+        }
     }else if(command.baseCommand==BaseCommand::ENCRYPT){
-        Crypto cry(Manager::getInstance().key);
-        fs::path encFile = cry.encrypt(command.filePath.value());
-        fs::copy_file(encFile, "encrypted_file.wtf");
+        try{
+            Crypto cry(Manager::getInstance().key);
+            fs::path encFile = cry.encrypt(command.filePath.value());
+            fs::path interName(command.internalName.value());
+            fs::copy_file(encFile, interName);
+            Utilities::deleteFile(encFile, command.secureDelete, config.secureDeletionPasses);
+            return true;
+        }
+        catch(std::exception& e){
+            std::cout << e.what();
+        }
     }else if(command.baseCommand==BaseCommand::DECRYPT){
         Crypto cry(Manager::getInstance().key);
         fs::path decFile = cry.decrypt(command.filePath.value());

@@ -139,6 +139,85 @@ Manager::~Manager() {
 }
 
 void Manager::displayHelp(){
-    std::cout << "This is the help menu" << std::endl;
+    
+        
+        std::cout << Color::BOLD << Color::BRIGHT_CYAN << "Vault Command Help:" << Color::RESET << "\n";
+        std::cout << Color::BRIGHT_CYAN << "-------------------" << Color::RESET << "\n\n";
+    
+        
+        std::cout << Color::BOLD << Color::YELLOW << "Vault Operations:" << Color::RESET << "\n";
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "add" << Color::RESET
+                  << " " << Color::CYAN << "<file_path>" << Color::RESET
+                  << " " << Color::MAGENTA << "[-name <internal_name>]" << Color::RESET
+                  << " " << Color::MAGENTA << "[-sdel]" << Color::RESET << "\n";
+        std::cout << "    Adds the specified file to the vault.\n";
+        std::cout << "    " << Color::CYAN << "<file_path>" << Color::RESET << ": Path to the file on your system.\n";
+        std::cout << "    " << Color::MAGENTA << "-name <internal_name>" << Color::RESET << ": (Optional) Store the file under a different name inside the vault.\n";
+        std::cout << "                         Defaults to the original filename.\n";
+        std::cout << "    " << Color::MAGENTA << "-sdel" << Color::RESET << ": (Optional) Securely delete the original file after adding it.\n\n";
+    
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "fetch" << Color::RESET
+                  << " " << Color::CYAN << "<internal_name>" << Color::RESET << "\n";
+        std::cout << "    Retrieves a file from the vault by its internal name.\n";
+        std::cout << "    " << Color::CYAN << "<internal_name>" << Color::RESET << ": The name of the file as stored in the vault.\n";
+        std::cout << "    The file will be saved to the current working directory.\n\n";
+    
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "list" << Color::RESET << "\n";
+        std::cout << "    Lists all files currently stored inside the vault.\n\n";
+    
+    
+        
+        std::cout << Color::BOLD << Color::YELLOW << "File Security Operations:" << Color::RESET << "\n";
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "sdelete" << Color::RESET
+                  << " " << Color::CYAN << "<file_path>" << Color::RESET << "\n";
+        std::cout << "    Securely deletes the specified file from your filesystem.\n";
+        std::cout << "    " << Color::CYAN << "<file_path>" << Color::RESET << ": Path to the file on your system to securely delete.\n";
+        std::cout << "    " << Color::BOLD << Color::BRIGHT_RED << "WARNING: This action is irreversible." << Color::RESET << "\n\n";
+    
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "encrypt" << Color::RESET
+                  << " " << Color::CYAN << "<file_path>" << Color::RESET << "\n";
+        std::cout << "    Encrypts the specified file.\n";
+        std::cout << "    " << Color::CYAN << "<file_path>" << Color::RESET << ": Path to the file on your system to encrypt.\n\n";
+    
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "decrypt" << Color::RESET
+                  << " " << Color::CYAN << "<file_path>" << Color::RESET << "\n";
+        std::cout << "    Decrypts the specified file.\n";
+        std::cout << "    " << Color::CYAN << "<file_path>" << Color::RESET << ": Path to the file on your system to decrypt.\n\n";
+    
+    
+        
+        std::cout << Color::BOLD << Color::YELLOW << "Filesystem Navigation (Standard Commands):" << Color::RESET << "\n";
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "ls" << Color::RESET
+                  << " " << Color::MAGENTA << "[<directory_path>]" << Color::RESET << "\n";
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "dir" << Color::RESET
+                  << " " << Color::MAGENTA << "[<directory_path>]" << Color::RESET << "\n";
+        std::cout << "    Lists the contents of the specified directory or the current directory.\n\n";
+    
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "cd" << Color::RESET
+                  << " " << Color::CYAN << "<directory_path>" << Color::RESET << "\n";
+        std::cout << "    Changes the current working directory.\n\n";
+    
+    
+        
+        std::cout << Color::BOLD << Color::YELLOW << "Application Control:" << Color::RESET << "\n";
+        
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "help" << Color::RESET << "\n";
+        std::cout << "    Displays this help message.\n\n";
+    
+        // exit command
+        std::cout << "  " << Color::BOLD << Color::BRIGHT_GREEN << "exit" << Color::RESET << "\n";
+        std::cout << "    Exits the vault application.\n\n";
+    
+        
+        std::cout << Color::RESET;
+    
 }
 

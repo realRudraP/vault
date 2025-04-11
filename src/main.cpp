@@ -24,8 +24,10 @@ int main(){
                    [](unsigned char c){ return std::tolower(c); });
         std::vector<std::string> tokens = Utilities::tokenize(inputLine);
         Command currentCommand = parser.parse(tokens);
-        if(!VaultManager::getInstance().executor(currentCommand)){
-            std::cerr << "Error ho gaya bhai" << std::endl;
+        try{
+            VaultManager::getInstance().executor(currentCommand);
+        }catch (std::exception e){
+            std::cerr << "Error in executing command: " << e.what() << std::endl;
         }
     }
 }

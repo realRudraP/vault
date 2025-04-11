@@ -7,8 +7,6 @@ Crypto::Crypto(const std::vector<unsigned char>& key) {
     std::copy(key.begin(), key.end(), aesKey);
 }
 
-
-
 void Crypto::handleErrors() {
     ERR_print_errors_fp(stderr);
     throw std::runtime_error("OpenSSL encountered an error.");
@@ -56,7 +54,7 @@ fs::path Crypto::encrypt(const fs::path& inputFilePath) {
         generatedFiles.push_back(outputFilePath);
         return outputFilePath;
     } catch (const std::exception& e) {
-        std::cerr << "Encryption Error: " << e.what() << std::endl;
+        throw e;
         return "";
     }
 }
@@ -107,7 +105,7 @@ fs::path Crypto::decrypt(const fs::path& inputFilePath) {
         generatedFiles.push_back(outputFilePath);
         return outputFilePath;
     } catch (const std::exception& e) {
-        std::cerr << "Decryption Error: " << e.what() << std::endl;
+        throw e;
         return "";
     }
 }

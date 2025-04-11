@@ -84,7 +84,6 @@ void VaultManager::createNewVault(fs::path vaultPath)
             ║  erase tools or full-disk encryption with secure key destruction.  ║
             ╚════════════════════════════════════════════════════════════════════╝
             )" << std::endl;
-            
 
         int passes = Utilities::getPositiveIntFromUser("How many passes would you like?", 3);
         config.secureDeletionPasses = passes;
@@ -108,15 +107,14 @@ void VaultManager::createNewVault(fs::path vaultPath)
             ╚════════════════════════════════════════════════════════╝
         )" << std::endl;
 
-        std::vector<std::pair<std::string, fs::path>> defaultLocations = {
-            { "Temp", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) / "Temp" },
-            { "Public", FileManager::getSpecialFolderPath(FOLDERID_Public) },
-            { "ProgramData", FileManager::getSpecialFolderPath(FOLDERID_ProgramData) },
-            { "LocalAppData", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) },
-            { "UserProfile", FileManager::getSpecialFolderPath(FOLDERID_Profile) },
-            { "RecycleBinCandidate", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) / "Microsoft" / "Windows" / "INetCache" }
-        };
-        
+    std::vector<std::pair<std::string, fs::path>> defaultLocations = {
+        { "Temp", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) / "Temp" },
+        { "Public", FileManager::getSpecialFolderPath(FOLDERID_Public) },
+        { "ProgramData", FileManager::getSpecialFolderPath(FOLDERID_ProgramData) },
+        { "LocalAppData", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) },
+        { "UserProfile", FileManager::getSpecialFolderPath(FOLDERID_Profile) },
+        { "RecycleBinCandidate", FileManager::getSpecialFolderPath(FOLDERID_LocalAppData) / "Microsoft" / "Windows" / "INetCache" }
+    };
 
     for (size_t i = 0; i < defaultLocations.size(); ++i) {
         std::cout << "  [" << i + 1 << "] " << defaultLocations[i].first
@@ -230,7 +228,7 @@ bool VaultManager::executor(Command command)
         std::cout << "Encrypting file..." << std::endl;
         Crypto cryp(Manager::getInstance().key);
         fs::path encPath = cryp.encrypt(command.filePath.value());
-        LOG_WARN("Encrypted file path: "+encPath.string());
+        LOG_WARN("Encrypted file path: " + encPath.string());
         std::cout << Color::GREEN << "Done\n"
                   << Color::RESET << "Chunking encrypted file.." << std::endl;
         fs::path chunkDir = ImplManager().splitFile(encPath, 10);
@@ -251,13 +249,13 @@ bool VaultManager::executor(Command command)
             for (const auto file : chunks) {
                 fs::path randomFolder;
                 size_t tries = 0;
-                do{
+                do {
                     randomFolder = VaultManager::getRandomFolder();
-                    if(tries++>5){
+                    if (tries++ > 5) {
                         std::cerr << "Failed to find cover directories for 5 times. Please check your configuration." << std::endl;
                         throw std::runtime_error("Cover directories not found.");
                     }
-                }while(!fs::exists(randomFolder));
+                } while (!fs::exists(randomFolder));
                 std::string randomName = Utilities::generateUUID() + ".vaultenc";
                 fs::path newPath = randomFolder / randomName;
                 fs::copy_file(file, newPath, fs::copy_options::overwrite_existing);
@@ -269,8 +267,8 @@ bool VaultManager::executor(Command command)
         } catch (const std::exception& e) {
             std::cerr << "Error in adding file: " << e.what() << std::endl;
             std::cerr << Color::RED << "Cleaning up.." << std::endl;
-            for(const auto ele:fileInfo.chunks){
-                Utilities::deleteFile(ele.chunk_path,command.secureDelete,config.secureDeletionPasses);
+            for (const auto ele : fileInfo.chunks) {
+                Utilities::deleteFile(ele.chunk_path, command.secureDelete, config.secureDeletionPasses);
             }
             Utilities::deleteFile(encPath, command.secureDelete, config.secureDeletionPasses);
             Utilities::deleteFile(chunkDir, command.secureDelete, config.secureDeletionPasses);
@@ -281,7 +279,7 @@ bool VaultManager::executor(Command command)
         Manager::getInstance().saveMetadataEncrypted(vaultMetadata);
         std::cout << Color::GREEN << "Done\n"
                   << Color::RESET << "Cleaning up.." << std::endl;
-        Utilities::deleteFile(command.filePath.value(),command.secureDelete,config.secureDeletionPasses);
+        Utilities::deleteFile(command.filePath.value(), command.secureDelete, config.secureDeletionPasses);
         Utilities::deleteFile(encPath, command.secureDelete, config.secureDeletionPasses);
         Utilities::deleteFile(chunkDir, command.secureDelete, config.secureDeletionPasses);
         std::cout << Color::GREEN << "Done\n"
@@ -301,68 +299,82 @@ bool VaultManager::executor(Command command)
                 break;
             }
         }
-        if(!found){
+        if (!found) {
             std::cerr << Color::RED << "Error: File " << command.internalName.value() << " was not found in your vault." << Color::RESET << std::endl;
             return false;
         }
-        std::cout << Color::GREEN << "Done.\n" << Color::RESET<<"Finding,collecting and sorting chunks.." << std::endl;
+        std::cout << Color::GREEN << "Done.\n"
+                  << Color::RESET << "Finding,collecting and sorting chunks.." << std::endl;
         std::vector<ChunkInfo> chunks = storedFile.chunks;
 
         std::sort(chunks.begin(), chunks.end(), [](const ChunkInfo& a, const ChunkInfo& b) {
             return a.order_index < b.order_index;
         });
-        
+
         std::vector<fs::path> chunkPaths;
-        chunkPaths.reserve(chunks.size()); 
+        chunkPaths.reserve(chunks.size());
 
         for (const auto& chunk : chunks) {
             chunkPaths.push_back(chunk.chunk_path);
         }
-        std::cout << Color::GREEN << "Done\n" << Color::RESET;
+        std::cout << Color::GREEN << "Done\n"
+                  << Color::RESET;
         std::cout << "Reconstructing encrypted file from chunks..." << std::endl;
-        try{
-        gluedTogetherFile = ImplManager().reconstruct(chunkPaths,10,storedFile.filename);
-        std::cout << Color::GREEN << "Done\n" << Color::RESET;
-        std::cout << "Decrypting file..." << std::endl;
-        std::cout << Color::GREEN << "Done\n" << Color::RESET;
-        Crypto cry(Manager::getInstance().key);
-        decryptedFile=cry.decrypt(gluedTogetherFile);
-        
-        LOG_WARN("Decrypted file path: " + decryptedFile.string());
-        return true;
-        }catch(std::exception&e){
+        try {
+            gluedTogetherFile = ImplManager().reconstruct(chunkPaths, 10, storedFile.filename);
+            std::cout << Color::GREEN << "Done\n"
+                      << Color::RESET;
+            std::cout << "Decrypting file..." << std::endl;
+
+            Crypto cry(Manager::getInstance().key);
+            decryptedFile = cry.decrypt(gluedTogetherFile);
+
+            std::cout << Color::GREEN << "Done\n"
+                      << Color::RESET << "Cleaning up.." << std::endl;
+            Utilities::deleteFile(gluedTogetherFile, command.secureDelete, config.secureDeletionPasses);
+            LOG_WARN("Decrypted file path: " + decryptedFile.string());
+            std::cout << Color::GREEN << "Done\n"
+                      << Color::RESET;
+            return true;
+        } catch (std::exception& e) {
             std::cerr << Color::RED << "Error during file fetch: " << e.what() << Color::RESET << std::endl;
             std::cerr << Color::YELLOW << "Cleaning up intermediate files..." << Color::RESET << std::endl;
             if (!gluedTogetherFile.empty() && fs::exists(gluedTogetherFile)) {
                 Utilities::deleteFile(gluedTogetherFile, command.secureDelete, config.secureDeletionPasses);
             }
             if (!decryptedFile.empty() && fs::exists(decryptedFile)) {
-                
-               Utilities::deleteFile(decryptedFile, command.secureDelete, config.secureDeletionPasses);
-           }
-           std::cerr << Color::GREEN << "Done.\n" << Color::YELLOW << "Exiting without completing operation." << Color::RESET << std::endl;
-        return false; 
+
+                Utilities::deleteFile(decryptedFile, command.secureDelete, config.secureDeletionPasses);
+            }
+            std::cerr << Color::GREEN << "Done.\n"
+                      << Color::YELLOW << "Exiting without completing operation." << Color::RESET << std::endl;
+            return false;
         }
-    }else if(command.baseCommand==BaseCommand::ENCRYPT){
-        try{
+    } else if (command.baseCommand == BaseCommand::ENCRYPT) {
+        try {
             Crypto cry(Manager::getInstance().key);
             fs::path encFile = cry.encrypt(command.filePath.value());
             fs::path interName(command.internalName.value());
             fs::copy_file(encFile, interName);
             Utilities::deleteFile(encFile, command.secureDelete, config.secureDeletionPasses);
             return true;
-        }
-        catch(std::exception& e){
+        } catch (std::exception& e) {
             std::cout << e.what();
+            return false;
         }
-    }else if(command.baseCommand==BaseCommand::DECRYPT){
+    } else if (command.baseCommand == BaseCommand::DECRYPT) {
         Crypto cry(Manager::getInstance().key);
         fs::path decFile = cry.decrypt(command.filePath.value());
-        fs::copy_file(decFile, "gotitback.png");
-    }else if(command.baseCommand==BaseCommand::LIST){
+        fs::copy_file(decFile, decFile.parent_path() / decFile.stem());
+        return true;
+    } else if (command.baseCommand == BaseCommand::LIST) {
         this->printStoredFiles();
         return true;
+    } else if (command.baseCommand == BaseCommand::INVALID) {
+        std::cout << "Invalid command entered. Use 'help' to find list of valid commands" << std::endl;
+        return true;
     }
+    return false;
 }
 fs::path VaultManager::getRandomFolder()
 {
@@ -372,7 +384,8 @@ fs::path VaultManager::getRandomFolder()
     return vaultMetadata.foldersToStore[dis(gen)];
 }
 
-void VaultManager::printStoredFiles() {
+void VaultManager::printStoredFiles()
+{
     std::cout << "=== Stored Files ===\n";
     const auto files = this->vaultMetadata.files;
     if (files.empty()) {

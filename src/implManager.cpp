@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 fs::path ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
     fs::path sFilePath = encryptedFilePath;
-    std::cout << "[SPLITTING FUNCTION] Received file path: " << sFilePath << std::endl;
+    LOG_INFO("[SPLITTING FUNCTION] Received file path: " + sFilePath.string());
 
     if (!fs::exists(sFilePath)) {
         std::cerr << "File does not exist!" << std::endl;
@@ -75,7 +75,7 @@ fs::path ImplManager::splitFile(fs::path encryptedFilePath, int numChunks) {
                 throw std::runtime_error("Failed to write to output file: " + chunkFile.string());
             }
 
-            std::cout << "Chunk " << i << " stored in: " << chunkFile << std::endl;
+            LOG_INFO("Chunk " + std::to_string(i) + " stored in: " + chunkFile.string());
             //splitFileDirs.push_back(chunkFile);
             outputFile.close();
         }

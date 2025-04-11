@@ -13,7 +13,7 @@ Command Parser::parse(std::vector<std::string> args)
     if (args.size() == 0) {
         return Command::makeTrivialCommand();
     }
-    Command command;
+    LOG_WARN("Entered parser");
     if (args[0] == "add") {
         if (args.size() < 2) {
             std::cerr << "Add command requires a file path" << std::endl;
@@ -29,6 +29,7 @@ Command Parser::parse(std::vector<std::string> args)
             return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         std::optional<std::string> internalName = std::nullopt;
+        Command command;
         auto it = std::find(args.begin() + 2, args.end(), "-name");
         if (it != args.end() && (it + 1) != args.end()) {
             internalName = *(it + 1);
@@ -42,15 +43,15 @@ Command Parser::parse(std::vector<std::string> args)
         }
         return command;
     } else if (args[0] == "fetch") {
-        if(args.size()!=2){
+        if (args.size() != 2) {
             std::cerr << "Expected fetch <filename>";
             return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         return Command(BaseCommand::FETCH, false, std::nullopt, args[1]);
 
     } else if (args[0] == "sdelete") {
-        if(args.size()!=2){
-            std::cerr<< "Expected syntax: delete <filename/path>";
+        if (args.size() != 2) {
+            std::cerr << "Expected syntax: delete <filename/path>";
             return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         fs::path path(args[1]);
@@ -93,51 +94,51 @@ Command Parser::parse(std::vector<std::string> args)
             std::cout << "Usage: cd <directory>" << std::endl;
         }
         return Command::makeTrivialCommand();
-    }else if(args[0]=="encrypt"){
-        if(args.size()<2){
+    } else if (args[0] == "encrypt") {
+        if (args.size() < 2) {
             std::cerr << "Expected filepath after encrypt" << std::endl;
             return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
         }
         fs::path filePath = fs::path(args[1]);
         bool secureDelete = Config::getInstance().enableSecureDeletion;
         std::optional<std::string> internalName = std::nullopt;
-        if(fs::exists(filePath)){
-            
-        auto it = std::find(args.begin() + 2, args.end(), "-name");
-        if (it != args.end() && (it + 1) != args.end()) {
-            internalName = *(it + 1)+".vaultaes";
-        } else {
-            internalName = filePath.filename().string()+".vaultaes";
-        }
-        auto ite = std::find(args.begin() + 2, args.end(), "-sDel");
-        if (ite != args.end() && (ite + 1) != args.end()) {
-            secureDelete = true;
-        }
-        }else{
-            std::cerr<<"The specified file does not exist. Aborting encryption";
-            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
-        }
-        return Command(BaseCommand::ENCRYPT, secureDelete, filePath, internalName);
-    }else if(args[0]=="decrypt"){
-        if(args.size()<2){
-            std::cerr << "Expected filepath after decrypt" << std::endl;
-            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
-        }
-        fs::path filePath = fs::path(args[1]);
-        if(fs::exists(filePath)){
-            if(filePath.extension()!=".vaultaes"){
-                std::cerr << "You seem to be trying to decrypt a file which was not encrypted by vault.\n Decryption is not possible" << std::endl;
+        if (fs::exists(filePath)) {
+
+            auto it = std::find(args.begin() + 2, args.end(), "-name");
+            if (it != args.end() && (it + 1) != args.end()) {
+                internalName = *(it + 1) + ".vaultaes";
+            } else {
+                internalName = filePath.filename().string() + ".vaultaes";
             }
-            return Command(BaseCommand::DECRYPT, false, filePath, std::nullopt);
-        }else{
-            std::cerr << "The given filepath doesn't exist" << std::endl;
-            return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+            auto ite = std::find(args.begin() + 2, args.end(), "-sDel");
+            if (ite != args.end() && (ite + 1) != args.end()) {
+                secureDelete = true;
+            }
+        
+            return Command(BaseCommand::ENCRYPT, secureDelete, filePath, internalName);
         }
-    }else if(args[0]=="list"){
-        if(args.size()>1){
-            std::cout << "Received list command. Ignoring rest of line" << std::endl;
-            
+        return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+        } else if (args[0] == "decrypt") {
+            if (args.size() < 2) {
+                std::cerr << "Expected filepath after decrypt" << std::endl;
+                return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+            }
+            fs::path filePath = fs::path(args[1]);
+            if (fs::exists(filePath)) {
+                if (filePath.extension() != ".vaultaes") {
+                    std::cerr << "You seem to be trying to decrypt a file which was not encrypted by vault.\n Decryption is not possible" << std::endl;
+                }
+                return Command(BaseCommand::DECRYPT, false, filePath, std::nullopt);
+            } else {
+                std::cerr << "The given filepath doesn't exist" << std::endl;
+                return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
+            }
+        } else if (args[0] == "list") {
+            if (args.size() > 1) {
+                std::cout << "Received list command. Ignoring rest of line" << std::endl;
+            }
+            return Command(BaseCommand::LIST, false, std::nullopt, std::nullopt);
         }
-        return Command(BaseCommand::LIST, false, std::nullopt, std::nullopt);
+        LOG_ERROR("Reached end");
+        return Command(BaseCommand::INVALID, false, std::nullopt, std::nullopt);
     }
-}

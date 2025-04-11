@@ -14,7 +14,7 @@ AES_GCM::AES_GCM(const std::vector<unsigned char>& key) {
 AES_GCM::~AES_GCM() {
     try {
         cleanupFiles();
-        OPENSSL_cleanse(aesKey, AES_KEY_SIZE);
+        
     } catch (const std::exception& e) {
         std::cerr << "Destructor Cleanup Error: " << e.what() << std::endl;
     }

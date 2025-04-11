@@ -1,0 +1,47 @@
+name: C++ Build
+
+on:
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
+
+
+jobs:
+    build:
+        runs-on: windows-latest
+    
+        steps:
+        - name : Checkout repo
+          uses: actions/checkout@v3
+        
+        - name: Set up vcpkg
+          uses: lukka/run-vcpkg@v11
+          with:
+            vcpkgGitCommitID: ea2a964f9303270322cf3f2d51c265ba146c422d
+        - name: Install OpenSSL
+          run: |
+            vcpkg install openssl:x64-windows
+        - name: Set up VS code Developer Prompt
+          uses: ilammy/msvc-dev-cmd@v1
+        - name: Compile C++ code
+          run: |
+            cl.exe /Zi /EHsc /DNDEBUG /nologo /std:c++17 /Zc:__cplusplus ^
+            /Fe${{ github.workspace }}\build\app.exe ^
+            ${{ github.workspace }}\src\*.cpp ^
+            /I "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um" ^
+            /I "${{ github.workspace }}/vcpkg_installed/x64-windows/include" ^
+            /link ^
+            /LIBPATH:"${{ github.workspace }}/vcpkg_installed/x64-windows/lib" ^
+            libcrypto.lib ^
+            libssl.lib ^
+            shell32.lib ^
+            ole32.lib ^
+            advapi32.lib
+        - name: Upload build artifacts
+          uses: actions/upload-artifact@v3
+          with:
+              name: application
+              path: ${{ github.workspace }}\build\*.exe
+        
+        

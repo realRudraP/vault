@@ -383,6 +383,9 @@ bool VaultManager::executor(Command command)
     } else if (command.baseCommand == BaseCommand::INVALID) {
         std::cout << "Invalid command entered. Use 'help' to find list of valid commands" << std::endl;
         return true;
+    }else if(command.baseCommand==BaseCommand::SDELETE){
+        Utilities::deleteFile(command.filePath.value(), true, 10);
+        return true;
     }
     return false;
 }

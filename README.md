@@ -107,16 +107,7 @@ This dependency is automatically managed by `vcpkg` via the `vcpkg.json` file [c
             * Displays the built-in help message detailing available commands.
         * `exit`
             * Exits the Vault application shell.
-
-## Project Structure
-## Project Structure
-vault/
-├── include/            # Header files (.h) defining interfaces
-│   ├── ... (list of .h files)
-├── src/                # Source files (.cpp) implementing the logic
-│   ├── ... (list of .cpp files including main.cpp)
-├── vcpkg.json          # vcpkg manifest: defines dependencies (OpenSSL)
-├── vcpkg-configuration.json # vcpkg configuration details (e.g., registries)
-└── README.md           # This documentation file
+## LICENSE
+The license can be found in the LICENSE file in this repository
 
 

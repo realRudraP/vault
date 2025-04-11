@@ -352,20 +352,30 @@ bool VaultManager::executor(Command command)
         }
     } else if (command.baseCommand == BaseCommand::ENCRYPT) {
         try {
+            std::cout << "Encrypting file..." << std::endl;
             Crypto cry(Manager::getInstance().key);
             fs::path encFile = cry.encrypt(command.filePath.value());
             fs::path interName(command.internalName.value());
             fs::copy_file(encFile, interName);
+            std::cout << Color::GREEN << "Done\n"
+                      << Color::RESET << "Cleaning up.." << std::endl;
+
             Utilities::deleteFile(encFile, command.secureDelete, config.secureDeletionPasses);
+            std::cout << Color::GREEN << "Done\n"
+                      << Color::RESET;
             return true;
         } catch (std::exception& e) {
             std::cout << e.what();
             return false;
         }
     } else if (command.baseCommand == BaseCommand::DECRYPT) {
+        std::cout << "Decrypting file..." << std::endl;
         Crypto cry(Manager::getInstance().key);
         fs::path decFile = cry.decrypt(command.filePath.value());
+        std::cout << Color::GREEN << "Done\n"
+                      << Color::RESET << "Cleaning up.." << std::endl;
         fs::copy_file(decFile, decFile.parent_path() / decFile.stem());
+        std::cout << "Done" << std::endl;
         return true;
     } else if (command.baseCommand == BaseCommand::LIST) {
         this->printStoredFiles();
